@@ -1,0 +1,19 @@
+{
+    "institusi": "Universitas Negeri Gorontalo",
+    "riwayat_fitur": "Fitur pencarian mahasiswa populer Dexafy pada 2024",
+    "cakupan": {
+        "angkatan": [
+            2021,
+            2022,
+            2023
+        ],
+        "unit": "seluruh jurusan dan program studi di Universitas Negeri Gorontalo"
+    },
+    "mahasiswa": {
+        "angkatan": {
+            "2021": [],
+            "2022": [],
+            "2023": []
+        }
+    }
+}
