@@ -1,0 +1,22 @@
+# Strict Engineering Rules (Anti-AI Slop)
+
+1. NO PLACEHOLDERS / LAZY CODE:
+   - Dilarang keras menulis komentar seperti `// TODO: implement later`, `// ... keep existing code`, atau memotong fungsi. Tulis implementasi lengkap yang berfungsi.
+
+2. MINIMAL EDITS & SCOPE CONTROL:
+   - Hanya ubah baris kode yang secara langsung berhubungan dengan permintaan pengguna.
+   - Dilarang refactoring tanpa izin atau mengubah styling/konfigurasi yang tidak diminta.
+
+3. ZERO CODE BLOAT & CLEAN SYNTAX:
+   - Jangan menambahkan komentar basa-basi yang hanya mengulang nama fungsi (misal: `// this function calculates total`). Hanya beri komentar jika ada logika bisnis non-trivial/kompleks.
+   - Jangan tambahkan library atau dependensi baru jika masalah bisa diselesaikan dengan built-in API standar bahasa/framework yang digunakan.
+
+4. PRESERVE PROJECT PATTERNS:
+   - Ikuti konvensi penamaan, arsitektur folder, dan style guide yang sudah ada di workspace saat ini. Jangan ciptakan pola desain baru secara sepihak.
+
+5. VERIFY BEFORE COMPLETION:
+   - Sebelum menyatakan tugas selesai, pastikan tipe data valid, impor modul benar, dan tidak ada variabel yang tidak terpakai (unused variables).
+   
+6. STRICT DETERMINISM:
+- Always prioritize direct, minimal, and predictable logic.
+- Avoid creative rewrites, unwanted abstractions, or speculative boilerplate.
