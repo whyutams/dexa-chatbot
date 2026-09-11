@@ -21,22 +21,24 @@
     <meta name="twitter:title" content="Dexa, Chatbot Asisten Pencarian Mahasiswa UNG">
     <meta name="twitter:description" content="Cari data mahasiswa UNG secara cepat">
     <script type="application/ld+json">
-        {
-            "@context": "https://schema.org",
-            "@type": "WebApplication",
-            "name": "Dexa, Chatbot Asisten Pencarian Mahasiswa UNG",
-            "alternateName": "Dexa Chatbot",
-            "url": "{{ url('/') }}",
-            "description": "Aplikasi pencarian data mahasiswa Universitas Negeri Gorontalo",
-            "applicationCategory": "EducationalApplication",
-            "operatingSystem": "Web",
-            "inLanguage": "id-ID",
-            "author": {
-                "@type": "Person",
-                "name": "Wahyu Tams",
-                "url": "https://whyutams.dev"
-            }
-        }
+        @verbatim
+                {
+                    "@context": "https://schema.org",
+                    "@type": "WebApplication",
+                    "name": "Dexa, Chatbot Asisten Pencarian Mahasiswa UNG",
+                    "alternateName": "Dexa Chatbot",
+                    "url": "/",
+                    "description": "Aplikasi pencarian data mahasiswa Universitas Negeri Gorontalo",
+                    "applicationCategory": "EducationalApplication",
+                    "operatingSystem": "Web",
+                    "inLanguage": "id-ID",
+                    "author": {
+                        "@type": "Person",
+                        "name": "Wahyu Tams",
+                        "url": "https://whyutams.dev"
+                    }
+                }
+        @endverbatim
     </script>
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <script>
