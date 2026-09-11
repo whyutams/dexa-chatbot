@@ -49,8 +49,7 @@
         .dexafy-gradient { background: linear-gradient(115deg, #53699f 0%, #5b5f9d 48%, #69478d 100%); }
         .chat-scroll::-webkit-scrollbar { width: 6px; } .chat-scroll::-webkit-scrollbar-thumb { background: #c4c9df; border-radius: 10px; }
         .typing-dot { animation: pulse 1.2s infinite ease-in-out; } .typing-dot:nth-child(2) { animation-delay: .15s; } .typing-dot:nth-child(3) { animation-delay: .3s; }
-        @keyframes pulse { 0%, 60%, 100% { opacity: .3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
-    </style>
+        @@keyframes pulse { 0%, 60%, 100% { opacity: .3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }    </style>
 </head>
 <body class="min-h-screen font-sans text-ink">
     <main class="mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-8 sm:px-8 lg:px-12">
