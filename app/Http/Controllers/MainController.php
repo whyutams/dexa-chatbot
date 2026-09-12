@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ChatContextService;
+use App\Services\ResponseFormatterService;
+use App\Services\StudentSearchEngine;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +14,16 @@ use Illuminate\View\View;
 class MainController extends Controller
 {
     private const ANGKATAN_DIDUKUNG = ['2021', '2022', '2023'];
+
+    public function __construct(
+        private ?ChatContextService $contextService = null,
+        private ?StudentSearchEngine $searchEngine = null,
+        private ?ResponseFormatterService $formatterService = null,
+    ) {
+        $this->contextService ??= new ChatContextService();
+        $this->searchEngine ??= new StudentSearchEngine();
+        $this->formatterService ??= new ResponseFormatterService();
+    }
 
     private const NIM_MAP = [
         '1114' => ['prodi' => 'S1 - Bimbingan Dan Konseling', 'fakultas' => 'Fakultas Ilmu Pendidikan'],
@@ -456,38 +469,12 @@ INSTRUKSI;
 
     private function bersihkanRiwayat(mixed $riwayat): array
     {
-        if (! is_array($riwayat)) {
-            return [];
-        }
-
-        $hasil = [];
-        foreach (array_slice($riwayat, -8) as $pesan) {
-            if (! is_array($pesan) || ! in_array($pesan['role'] ?? null, ['user', 'assistant'], true)) {
-                continue;
-            }
-
-            $isi = $this->bersihkanPertanyaan((string) ($pesan['content'] ?? ''));
-            if ($isi !== '') {
-                $hasil[] = ['role' => $pesan['role'], 'content' => $isi];
-            }
-        }
-
-        return $hasil;
+        return $this->contextService->sanitizeHistory($riwayat);
     }
 
     private function lengkapiDenganKonteks(string $pertanyaan, array $riwayat): string
     {
-        if (! preg_match('/^(yang tadi|itu|yang sebelumnya|tadi)\b/i', $pertanyaan)) {
-            return $pertanyaan;
-        }
-
-        foreach (array_reverse($riwayat) as $pesan) {
-            if ($pesan['role'] === 'user' && $pesan['content'] !== $pertanyaan) {
-                return $pesan['content'];
-            }
-        }
-
-        return $pertanyaan;
+        return $this->contextService->resolveAnaphora($pertanyaan, $riwayat);
     }
 
     private function ambilDataMahasiswa(): ?array
@@ -556,331 +543,17 @@ INSTRUKSI;
 
     private function cariMahasiswa(array $angkatan, string $pertanyaan): array
     {
-        $q = trim($pertanyaan);
-        $qLower = mb_strtolower($q);
-
-        if (preg_match_all('/\b(\d{6,10})\b/', $qLower, $mNims)) {
-            foreach ($mNims[1] as $targetNim) {
-                
-                foreach ($angkatan as $tahun => $mahasiswa) {
-                    if (!is_array($mahasiswa)) {
-                        continue;
-                    }
-                    foreach ($mahasiswa as $data) {
-                        if (is_array($data) && isset($data['nim']) && (string)$data['nim'] === $targetNim) {
-                            $data['angkatan'] = (string)$tahun;
-                            return [$data];
-                        }
-                    }
-                }
-
-                if (preg_match('/^(\d{3,5})(\d{2})(\d{3})$/', $targetNim, $mStructure)) {
-                    $prefix = $mStructure[1];
-                    $th = $mStructure[2];
-                    $seq = $mStructure[3];
-
-                    if (isset(self::NIM_MAP[$prefix])) {
-                        $info = self::NIM_MAP[$prefix];
-                        return [
-                            [
-                                'nama' => "Mahasiswa NIM {$targetNim}",
-                                'nim' => $targetNim,
-                                'prodi' => $info['prodi'],
-                                'fakultas' => $info['fakultas'],
-                                'angkatan' => '20' . $th,
-                                'nomor_urut' => $seq,
-                                'is_format_nim' => true,
-                            ]
-                        ];
-                    }
-                }
-            }
-
-            return [];
-        }
-
-        if ($this->merupakanKalimatUmum($pertanyaan) || $this->mengobrol($pertanyaan) || $this->menyapaDexa($pertanyaan)) {
-            return [];
-        }
-
-        $text = $qLower;
-        $text = preg_replace('/[^\p{L}\p{N}\s-]/u', ' ', $text) ?? $text;
-
-        $chatterPrefixes = [
-            '/\b(?:hai|halo|hi|hey|woi|bro|sis)\b/u',
-            '/\b(?:apakah\s+)?(?:kamu|anda|dexa|kamuctau)\s+(?:kenal|tau|tahu|mengenal|punya\s+data)\b/u',
-            '/\b(?:cari(?:kan)?|tolong\s+cari(?:kan)?|bisa\s+cari(?:kan)?|info(?:rmasi)?\s+tentang|data\s+tentang)\b/u',
-            '/\b(?:siapa\s+sih|siapakah|siapa)\s+(?:itu\s+)?\b/u',
-        ];
-        foreach ($chatterPrefixes as $cp) {
-            $text = preg_replace($cp, ' ', $text) ?? $text;
-        }
-
-        $filterAngkatan = null;
-        if (preg_match('/\b(?:angkatan\s+)?(2021|2022|2023|2024|2025)\b/u', $text, $mYear)) {
-            $filterAngkatan = $mYear[1];
-            $text = str_replace($mYear[0], ' ', $text);
-        }
-
-        $targetProdiKeywords = [];
-        foreach (self::PRODI_ALIASES as $alias => $realProdi) {
-            if (preg_match('/\b' . preg_quote($alias, '/') . '\b/u', $text)) {
-                $targetProdiKeywords[] = $realProdi;
-                $text = preg_replace('/\b' . preg_quote($alias, '/') . '\b/u', ' ', $text);
-            }
-        }
-        foreach (self::FAKULTAS_ALIASES as $alias => $realFakultas) {
-            if (preg_match('/\b' . preg_quote($alias, '/') . '\b/u', $text)) {
-                $targetProdiKeywords[] = $realFakultas;
-                $text = preg_replace('/\b' . preg_quote($alias, '/') . '\b/u', ' ', $text);
-            }
-        }
-
-        $stopWords = [
-            'kamu', 'anda', 'kenal', 'mengenal', 'tahu', 'tau', 'apakah', 'siapa', 'apa', 'yang', 'ini', 'itu', 
-            'tentang', 'tolong', 'bisa', 'dong', 'lagi', 'sedang', 'ngapain', 'kabar', 'gimana', 'bagaimana', 
-            'mau', 'ingin', 'bantu', 'jawab', 'jawaban', 'terus', 'ya', 'kan', 'dari', 'di', 'pada', 'dengan', 
-            'ada', 'dan', 'mhs', 'mahasiswa', 'nama', 'nim', 'prodi', 'program', 'studi', 'jurusan', 'fakultas', 
-            'angkatan', 'orang', 'anak', 'si', 'ngab', 'pacar', 'pacarnya', 'kamuctau', 'aku', 'saya', 'dia', 
-            'kita', 'mereka', 'gue', 'gw', 'lu', 'loe', 'lah', 'pun', 'deh', 'dong', 'sih', 'kok', 'cara'
-        ];
-
-        $tokens = preg_split('/\s+/u', trim($text)) ?: [];
-        $queryTokens = array_values(array_filter($tokens, fn($t) => mb_strlen($t) >= 2 && !in_array($t, $stopWords, true)));
-
-        if (empty($queryTokens) && empty($targetProdiKeywords) && empty($filterAngkatan)) {
-            return [];
-        }
-
-        $candidates = [];
-
-        foreach ($angkatan as $tahun => $mahasiswa) {
-            if (!in_array((string)$tahun, self::ANGKATAN_DIDUKUNG, true)) {
-                continue;
-            }
-
-            if (!is_array($mahasiswa)) {
-                continue;
-            }
-
-            foreach ($mahasiswa as $s) {
-                if (!is_array($s)) {
-                    continue;
-                }
-
-                $s['angkatan'] = (string)$tahun;
-                $score = 0;
-                $sName = mb_strtolower($s['nama'] ?? '');
-                $sProdi = mb_strtolower($s['prodi'] ?? '');
-                $sFak = mb_strtolower($s['fakul'] ?? $s['fakultas'] ?? '');
-
-                if ($filterAngkatan !== null) {
-                    if ((string)$tahun === $filterAngkatan) {
-                        $score += 30;
-                    } else {
-                        continue;
-                    }
-                }
-
-                if (!empty($targetProdiKeywords)) {
-                    $matchedProdi = false;
-                    foreach ($targetProdiKeywords as $kw) {
-                        if (str_contains($sProdi, $kw) || str_contains($sFak, $kw)) {
-                            $matchedProdi = true;
-                            $score += 40;
-                            break;
-                        }
-                    }
-                    if (!$matchedProdi) {
-                        $score -= 30;
-                    }
-                }
-
-                if (!empty($queryTokens) && $sName === implode(' ', $queryTokens)) {
-                    $score += 150;
-                }
-
-                $nameTokens = preg_split('/\s+/u', $sName) ?: [];
-                $matchedTokensCount = 0;
-                $hasSignificantNameMatch = false;
-
-                foreach ($queryTokens as $qTok) {
-                    $tokMatched = false;
-                    $maxTokScore = 0;
-
-                    foreach ($nameTokens as $nTok) {
-                        $nTokClean = rtrim($nTok, '.');
-
-                        if ($qTok === $nTokClean) {
-                            $maxTokScore = max($maxTokScore, 50);
-                            $tokMatched = true;
-                            if (mb_strlen($qTok) >= 3) {
-                                $hasSignificantNameMatch = true;
-                            }
-                            break;
-                        }
-
-                        if (mb_strlen($qTok) >= 3 && mb_strlen($nTokClean) >= 3) {
-                            if (str_starts_with($nTokClean, $qTok) || str_starts_with($qTok, $nTokClean)) {
-                                $maxTokScore = max($maxTokScore, 35);
-                                $tokMatched = true;
-                                $hasSignificantNameMatch = true;
-                                continue;
-                            }
-                        }
-
-                        if (mb_strlen($nTokClean) === 1 && str_starts_with($qTok, $nTokClean) && mb_strlen($qTok) <= 12) {
-                            $maxTokScore = max($maxTokScore, 25);
-                            $tokMatched = true;
-                            continue;
-                        }
-
-                        $len = max(mb_strlen($qTok), mb_strlen($nTokClean));
-                        if ($len >= 4) {
-                            $lev = levenshtein($qTok, $nTokClean);
-                            if ($lev === 1) {
-                                $maxTokScore = max($maxTokScore, 30);
-                                $tokMatched = true;
-                                $hasSignificantNameMatch = true;
-                            } elseif ($lev === 2 && $len >= 6) {
-                                $maxTokScore = max($maxTokScore, 20);
-                                $tokMatched = true;
-                                $hasSignificantNameMatch = true;
-                            }
-                        }
-                    }
-
-                    if ($tokMatched) {
-                        $matchedTokensCount++;
-                        $score += $maxTokScore;
-                    } else {
-                        if (str_contains($sProdi, $qTok) || str_contains($sFak, $qTok)) {
-                            $score += 20;
-                        }
-                    }
-                }
-
-                if (!empty($queryTokens) && $matchedTokensCount === count($queryTokens)) {
-                    $score += 35;
-                }
-
-                if ($score >= 60 && ($hasSignificantNameMatch || !empty($targetProdiKeywords))) {
-                    $s['search_score'] = $score;
-                    $candidates[] = $s;
-                }
-            }
-        }
-
-        usort($candidates, fn($a, $b) => ($b['search_score'] ?? 0) <=> ($a['search_score'] ?? 0));
-
-        if (empty($candidates)) {
-            return [];
-        }
-
-        $topScore = $candidates[0]['search_score'];
-        if (count($candidates) === 1 || ($topScore >= 80 && ($topScore - ($candidates[1]['search_score'] ?? 0)) >= 20)) {
-            return [$candidates[0]];
-        }
-
-        $topCandidates = array_values(array_filter($candidates, fn($c) => ($topScore - ($c['search_score'] ?? 0)) <= 15));
-
-        return $topCandidates;
+        return $this->searchEngine->search($angkatan, $pertanyaan);
     }
 
     private function memilikiPencarianSpesifik(string $pertanyaan): bool
     {
-        if (preg_match('/\b\d{6,}\b/', $pertanyaan) === 1) {
-            return true;
-        }
-
-        $teks = mb_strtolower($pertanyaan);
-        $teks = preg_replace('/[^\p{L}\p{N}\s-]/u', ' ', $teks) ?? $teks;
-        $teks = preg_replace('/\b(2021|2022|2023|2024|2025)\b/u', ' ', $teks) ?? $teks;
-        
-        $chatterPrefixes = [
-            '/\b(?:hai|halo|hi|hey|woi|bro|sis)\b/u',
-            '/\b(?:apakah\s+)?(?:kamu|anda|dexa|kamuctau)\s+(?:kenal|tau|tahu|mengenal|punya\s+data)\b/u',
-            '/\b(?:cari(?:kan)?|tolong\s+cari(?:kan)?|bisa\s+cari(?:kan)?|info(?:rmasi)?\s+tentang|data\s+tentang)\b/u',
-            '/\b(?:siapa\s+sih|siapakah|siapa)\s+(?:itu\s+)?\b/u',
-        ];
-        foreach ($chatterPrefixes as $cp) {
-            $teks = preg_replace($cp, ' ', $teks) ?? $teks;
-        }
-
-        foreach (self::PRODI_ALIASES as $alias => $realProdi) {
-            if (preg_match('/\b' . preg_quote($alias, '/') . '\b/u', $teks)) {
-                return true;
-            }
-        }
-        foreach (self::FAKULTAS_ALIASES as $alias => $realFakultas) {
-            if (preg_match('/\b' . preg_quote($alias, '/') . '\b/u', $teks)) {
-                return true;
-            }
-        }
-
-        $stopWords = [
-            'kamu', 'anda', 'kenal', 'mengenal', 'tahu', 'tau', 'apakah', 'siapa', 'apa', 'yang', 'ini', 'itu', 
-            'tentang', 'tolong', 'bisa', 'dong', 'lagi', 'sedang', 'ngapain', 'kabar', 'gimana', 'bagaimana', 
-            'mau', 'ingin', 'bantu', 'jawab', 'jawaban', 'terus', 'ya', 'kan', 'dari', 'di', 'pada', 'dengan', 
-            'ada', 'dan', 'mhs', 'mahasiswa', 'nama', 'nim', 'prodi', 'program', 'studi', 'jurusan', 'fakultas', 
-            'angkatan', 'orang', 'anak', 'si', 'ngab', 'pacar', 'pacarnya', 'kamuctau', 'aku', 'saya', 'dia', 
-            'kita', 'mereka', 'gue', 'gw', 'lu', 'loe', 'lah', 'pun', 'deh', 'dong', 'sih', 'kok', 'cara'
-        ];
-        $kataKunci = preg_split('/\s+/u', trim($teks)) ?: [];
-
-        return count(array_filter($kataKunci, fn ($kata) => mb_strlen($kata) >= 2 && ! in_array($kata, $stopWords, true))) > 0;
+        return $this->searchEngine->hasSpecificSearchQuery($pertanyaan);
     }
 
     private function formatHasilPencarian(array $hasil): string
     {
-        $jumlah = count($hasil);
-
-        if ($jumlah > 10) {
-            return "Aku menemukan banyak sekali data mahasiswa yang cocok dengan pencarianmu. Coba gunakan nama lengkap, NIM, prodi, atau angkatan agar pencariannya lebih spesifik ke 1 orang ya ✨";
-        }
-
-        if ($jumlah > 1) {
-            return "Aku menemukan {$jumlah} data mahasiswa yang cocok dengan kata kunci tersebut. Coba gunakan nama lengkap, NIM, prodi, atau angkatan agar pencariannya lebih spesifik ke 1 orang ya ✨";
-        }
-
-        $m = $hasil[0];
-
-        if ($m['is_format_nim'] ?? false) {
-            $nim = $m['nim'];
-            $prodi = $m['prodi'];
-            $fakultas = $m['fakultas'];
-            $angkatan = $m['angkatan'];
-
-            $kesimpulan = "\n\nJadi, NIM **{$nim}** merupakan mahasiswa **{$prodi}** angkatan **{$angkatan}** di **{$fakultas}**, Universitas Negeri Gorontalo ✨";
-
-            return "Berdasarkan format NIM **{$nim}**, berikut rincian datanya ✨:\n• **NIM**: {$nim}\n• **Prodi**: {$prodi}\n• **Fakultas**: {$fakultas}\n• **Angkatan**: {$angkatan}" . $kesimpulan;
-        }
-
-        $nama = $m['nama'] ?? 'Nama tidak tersedia';
-        $prodi = $m['prodi'] ?? 'Prodi tidak tersedia';
-        $fakultas = $m['fakul'] ?? $m['fakultas'] ?? 'Fakultas tidak tersedia';
-        $angkatan = $m['angkatan'] ?? '-';
-        $nim = $m['nim'] ?? 'Belum tercatat';
-
-        $rawMinat = isset($m['minat_bakat']) ? trim((string) $m['minat_bakat']) : '';
-        $adaMinat = $rawMinat !== '' && $rawMinat !== '-' && strtolower($rawMinat) !== 'null';
-        $minatTeks = $adaMinat ? $rawMinat : '';
-
-        $tambahanMinatList = $adaMinat ? "\n• **Minat & Bakat**: {$minatTeks}" : "";
-
-        $kesimpulan = "\n\nJadi, **{$nama}** merupakan mahasiswa **{$prodi}** angkatan **{$angkatan}** di **{$fakultas}**, Universitas Negeri Gorontalo ✨";
-
-        $variasiPembuka = [
-            "Berikut informasi mahasiswa yang kamu cari ya ✨:",
-            "Hai! 😊 Ini dia data mahasiswa yang kamu cari:",
-            "Yay! Ketemu nih 🎓 Berikut rincian data mahasiswanya:",
-            "Aku berhasil menemukan datanya! 😃 Berikut informasinya:",
-            "Ini dia data mahasiswa yang cocok dengan pencarianmu ✨:",
-        ];
-
-        $pembuka = $variasiPembuka[array_rand($variasiPembuka)];
-
-        return "{$pembuka}\n• **Nama**: {$nama}\n• **Prodi**: {$prodi}\n• **Fakultas**: {$fakultas}\n• **Angkatan**: {$angkatan}\n• **NIM**: {$nim}{$tambahanMinatList}" . $kesimpulan;
+        return $this->formatterService->formatSearchResults($hasil);
     }
 
     private function menyapaDexa(string $pertanyaan): bool
