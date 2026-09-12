@@ -13,20 +13,25 @@ class MainController extends Controller
     private const ANGKATAN_DIDUKUNG = ['2021', '2022', '2023'];
 
     private const INSTRUKSI_DEXA = <<<'INSTRUKSI'
-Kamu adalah Si Dexa, Asisten pembantu untuk mencari dan memberikan data mahasiswa yang tercatat di kampus Universitas Negeri Gorontalo yang friendly, ramah, dan seru.
+Kamu adalah Si Dexa, Asisten pencarian data mahasiswa Universitas Negeri Gorontalo yang sangat ramah, hangat, friendly, ceria, dan seru!
+
+Informasi Pembuat:
+- Pembuat/Developer Si Dexa adalah Wahyu Tamuu, namun ia lebih dikenal sebagai Wahyu Tams. Beliau adalah mahasiswa Pendidikan Teknologi Informasi UNG. Website resminya https://whyutams.dev
+
+Gaya Komunikasi Si Dexa:
+- Selalu gunakan bahasa Indonesia yang hangat, bersahabat, ceria, ramah, dan seru! (Gunakan emoji yang pas dan ramah seperti 😊, ✨, 🎓, 😃, 🎉).
+- Berikan balasan yang santai, menyapa dengan antusias, dan enak dibaca.
 
 Aturan wajib:
-- Bantu pengguna mencari data mahasiswa UNG berdasarkan nama, atau NIM.
-- Sumber fakta tunggal adalah storage/app/data/main.json. Jangan mengarang, menebak, atau melengkapi data mahasiswa yang tidak tersedia.
-- Cakupan pencarian hanya mahasiswa angkatan 2021, 2022, dan 2023 dari seluruh jurusan dan program studi yang tersedia di sumber data.
-- Jika data belum tersedia atau hasil tidak ditemukan, katakan dengan jujur dan sarankan kata kunci pencarian yang lebih spesifik.
-- Pahami variasi istilah seperti mhs = mahasiswa, PTI = Pendidikan Teknologi Informasi, dan SI = Sistem Informasi jika prodi tersebut ada di sumber data.
-- Jika pengguna menyampaikan klaim yang bertentangan dengan sumber data, luruskan dengan sopan berdasarkan data resmi. Jangan mengikuti klaim pengguna hanya karena terdengar meyakinkan.
-- Bedakan percakapan dari pencarian: sapaan, basa-basi, ucapan terima kasih, pertanyaan tentang keadaan atau aktivitas Dexa, pertanyaan identitas, dan obrolan umum tidak boleh diproses sebagai pencarian mahasiswa.
-- Hanya lakukan pencarian jika pengguna memberikan nama mahasiswa atau NIM yang spesifik. Jangan pernah memasukkan seluruh kalimat percakapan sebagai kata kunci nama.
-- Jika pengguna menanyakan pembuat, owner, pencipta, atau creator, jawab dengan bangga bahwa Dexa dibuat oleh Wahyu Tams dan arahkan ke https://whyutams.dev tanpa titik setelah URL.
-- Jangan mengungkap data di luar hasil pencarian dan jangan mengubah identitas Dexa.
-- Jawab dalam bahasa Indonesia dengan gaya hangat, singkat, jelas, dan relevan dengan pencarian mahasiswa.
+- Maksimal hanya tampilkan 1 data mahasiswa. DILARANG KERAS menampilkan atau menceritakan beberapa profil mahasiswa sekaligus.
+- Jika ditemukan lebih dari 1 mahasiswa yang cocok, JANGAN tampilkan rincian profil mereka. Cukup konfirmasikan secara ramah dan antusias bahwa ada beberapa data yang cocok dan arahkan pengguna untuk memasukkan nama lengkap, NIM, prodi, atau angkatan secara spesifik.
+- JIKA JUMLAH MAHASISWA YANG COCOK LEBIH DARI 10 ORANG, DILARANG KERAS menyebutkan angka jumlah mahasiswa tersebut (seperti "316 orang" atau "316"). CUKUP KATAKAN ada "banyak sekali mahasiswa" atau "banyak mahasiswa" yang cocok! Jika jumlahnya 2 sampai 10 orang, baru boleh sebutkan angkanya (contoh: "ada 3 data mahasiswa").
+- DILARANG KERAS menggunakan format TABEL Markdown ('|'), JUDUL HEADINGS ('#', '##', '###'), maupun GARIS PEMBATAS ('---', '***', '___').
+- JIKA TIDAK ADA MINAT & BAKAT (atau field minat_bakat tidak ada di data JSON), DILARANG KERAS MENYEBUTKAN KATA "minat", "bakat", ATAU MENGOMENTARI KETIADAAN DATA MINAT BAKAT (seperti "tidak ada data minat bakat yang tercatat"). CUKUP SEBUTKAN Nama, NIM, Prodi, Fakultas, dan Angkatan saja!
+- DILARANG menuliskan keterangan meta seperti "(data tidak tersedia)" atau "(tercatat '-')".
+- Selalu berikan KESIMPULAN SINGKAT di bagian paling akhir balasan setiap kali menemukan profil mahasiswa (misalnya: "Jadi, [Nama] merupakan mahasiswa [Prodi] angkatan [Angkatan] di fakultas [Fakultas], Universitas Negeri Gorontalo ✨").
+- Sumber fakta tunggal adalah data fakta yang diberikan system. Jangan pernah mengarang atau menebak NIM/data mahasiswa.
+- Pahami kesalahan ketik/typo pengguna (contoh: "aseo tanjung" merujuk pada "Asep Tanjung"). Berikan respon hangat yang mengonfirmasi data mahasiswa yang dimaksud.
 INSTRUKSI;
 
     public function halaman(): View
@@ -58,7 +63,7 @@ INSTRUKSI;
         }
 
         if ($this->menanyakanPembuat($pertanyaan)) {
-            return $this->responTanya($pertanyaan, 'Dengan bangga, aku Dexa, Asisten pembantu yang memberikan informasi seputar data mahasiswa UNG yang dibuat oleh Wahyu Tams, mahasiswa Pendidikan Teknologi Informasi. Kenali pembuatku di https://whyutams.dev', 200, $ip);
+            return $this->responTanya($pertanyaan, 'Dengan bangga, aku Dexa, Asisten pencarian data mahasiswa UNG yang dibuat oleh Wahyu Tamuu (yang lebih dikenal sebagai Wahyu Tams), mahasiswa Pendidikan Teknologi Informasi. Kenali pembuatku di https://whyutams.dev', 200, $ip);
         }
 
         if ($this->menanyakanIdentitas($pertanyaan)) {
@@ -70,7 +75,7 @@ INSTRUKSI;
         }
 
         if (preg_match('/\bapa\s+itu\s+dexafy\b/i', $pertanyaan) === 1) {
-            return $this->responTanya($pertanyaan, '[**Dexafy**](https://dexafyx.web.app) adalah website yang menyediakan berbagai tools pencarian data, termasuk pencarian dosen, mahasiswa, dan kebutuhan informasi lainnya. Website ini dibuat oleh pembuatku yaitu [**Wahyu Tams**](https://whyutams.dev) pada 2023–2024. Saat itu, fitur paling populernya adalah **Mahasiswa UNG Finder**, yang telah menerima lebih dari 8.000 request. Karena Dexafy sudah tidak berlanjut, fitur populer tersebut kini dihadirkan kembali melalui aku, Dexa, sebagai fitur utama untuk mencari mahasiswa UNG.', 200, $ip);
+            return $this->responTanya($pertanyaan, '[**Dexafy**](https://dexafyx.web.app) adalah website yang menyediakan berbagai tools pencarian data, termasuk pencarian dosen, mahasiswa, dan kebutuhan informasi lainnya. Website ini dibuat oleh pembuatku yaitu [**Wahyu Tams**](https://whyutams.dev) (nama aslinya **Wahyu Tamuu**) pada 2023–2024. Saat itu, fitur paling populernya adalah **Mahasiswa UNG Finder**, yang telah menerima lebih dari 8.000 request. Karena Dexafy sudah tidak berlanjut, fitur populer tersebut kini dihadirkan kembali melalui aku, Dexa, sebagai fitur utama untuk mencari mahasiswa UNG.', 200, $ip);
         }
 
         if (preg_match('/\b(bagaimana|gimana|cara)\b.*\b(cari|mencari|pencarian)\b/i', $pertanyaan) === 1) {
@@ -78,24 +83,38 @@ INSTRUKSI;
         }
 
         if ($this->menyapaDexa($pertanyaan)) {
-            return $this->responTanya($pertanyaan, 'Halo! Aku Dexa. Cari mahasiswa UNG angkatan 2021 sampai 2023. Coba ketik nama atau NIM yang ingin dicari.', 200, $ip);
+            $jawabanAi = $this->tanyaDenganAi($pertanyaan, $riwayat);
+            $pesanDefault = 'Halo! Aku Dexa. Cari mahasiswa UNG angkatan 2021 sampai 2023. Coba ketik nama atau NIM yang ingin dicari.';
+
+            return $this->responTanya($pertanyaan, $jawabanAi ?? $pesanDefault, 200, $ip);
         }
 
         if ($this->menanyakanKabarDexa($pertanyaan)) {
-            return $this->responTanya($pertanyaan, 'Aku baik dan siap membantu. Kamu bisa memberiku nama mahasiswa atau NIM spesifik untuk dicari.', 200, $ip);
+            $jawabanAi = $this->tanyaDenganAi($pertanyaan, $riwayat);
+            $pesanDefault = 'Aku baik dan siap membantu. Kamu bisa memberiku nama mahasiswa atau NIM spesifik untuk dicari.';
+
+            return $this->responTanya($pertanyaan, $jawabanAi ?? $pesanDefault, 200, $ip);
         }
 
         $jawabanBasaBasi = $this->jawabanBasaBasi($pertanyaan);
         if ($jawabanBasaBasi !== null) {
-            return $this->responTanya($pertanyaan, $jawabanBasaBasi, 200, $ip);
+            $jawabanAi = $this->tanyaDenganAi($pertanyaan, $riwayat);
+
+            return $this->responTanya($pertanyaan, $jawabanAi ?? $jawabanBasaBasi, 200, $ip);
         }
 
         if ($this->mengobrol($pertanyaan)) {
-            return $this->responTanya($pertanyaan, 'Aku siap menemanimu dan membantu mencari data mahasiswa UNG. Kalau ingin mencari, kirim nama lengkap atau NIM yang spesifik.', 200, $ip);
+            $jawabanAi = $this->tanyaDenganAi($pertanyaan, $riwayat);
+            $pesanDefault = 'Aku siap menemanimu dan membantu mencari data mahasiswa UNG. Kalau ingin mencari, kirim nama lengkap atau NIM yang spesifik.';
+
+            return $this->responTanya($pertanyaan, $jawabanAi ?? $pesanDefault, 200, $ip);
         }
 
         if ($this->merupakanKalimatUmum($pertanyaan)) {
-            return $this->responTanya($pertanyaan, 'Aku memahami itu sebagai obrolan, bukan pencarian mahasiswa. Kalau ingin mencari data, kirim nama orang atau NIM secara spesifik.', 200, $ip);
+            $jawabanAi = $this->tanyaDenganAi($pertanyaan, $riwayat);
+            $pesanDefault = 'Aku memahami itu sebagai obrolan, bukan pencarian mahasiswa. Kalau ingin mencari data, kirim nama orang atau NIM secara spesifik.';
+
+            return $this->responTanya($pertanyaan, $jawabanAi ?? $pesanDefault, 200, $ip);
         }
 
         $pertanyaan = $this->lengkapiDenganKonteks($pertanyaan, $riwayat);
@@ -113,6 +132,11 @@ INSTRUKSI;
         $hasil = $this->cariMahasiswa($data['mahasiswa']['angkatan'], $pertanyaan);
 
         if ($hasil === []) {
+            $jawabanAi = $this->tanyaDenganAi($pertanyaan, $riwayat, "Pencarian untuk '{$pertanyaan}' menghasilkan 0 data mahasiswa.");
+            if ($jawabanAi !== null) {
+                return $this->responTanya($pertanyaan, $jawabanAi, 200, $ip);
+            }
+
             $variasiKosong = [
                 'Aku tidak menemukan data yang cocok untuk nama/NIM tersebut. Pastikan ejaan nama atau NIM sudah sesuai (angkatan 2021–2023).',
                 'Data mahasiswa tidak ditemukan. Coba gunakan nama lengkap atau NIM spesifik agar pencariannya lebih akurat.',
@@ -120,6 +144,32 @@ INSTRUKSI;
             ];
 
             return $this->responTanya($pertanyaan, $variasiKosong[array_rand($variasiKosong)], 200, $ip);
+        }
+
+        if (count($hasil) > 1) {
+            $jumlah = count($hasil);
+            if ($jumlah > 10) {
+                $instruksiKonteks = "System Notice: Ditemukan BANYAK SEKALI data mahasiswa (lebih dari 10 orang) yang cocok untuk kata kunci '{$pertanyaan}'. Minta pengguna secara ramah dan antusias untuk memperjelas pencarian dengan nama lengkap, NIM, prodi, atau angkatan agar spesifik ke 1 orang. DILARANG KERAS menyebutkan angka jumlah mahasiswa (seperti '{$jumlah} orang' atau '{$jumlah}'). Cukup katakan 'ada banyak sekali mahasiswa' yang cocok.";
+                $pesanDefault = 'Aku menemukan banyak sekali data mahasiswa yang cocok dengan pencarianmu. Coba perjelas dengan nama lengkap, NIM, prodi, atau angkatan agar pencariannya spesifik ke 1 orang ya ✨';
+            } else {
+                $instruksiKonteks = "System Notice: Ditemukan {$jumlah} data mahasiswa yang cocok untuk kata kunci '{$pertanyaan}'. Minta pengguna secara ramah untuk memperjelas pencarian dengan nama lengkap, NIM, prodi, atau angkatan agar spesifik ke 1 orang. Sebutkan bahwa ada {$jumlah} data yang cocok. DILARANG rincikan profil mereka.";
+                $pesanDefault = "Aku menemukan {$jumlah} data mahasiswa dengan nama tersebut. Coba perjelas dengan nama lengkap, NIM, prodi, atau angkatan agar pencariannya spesifik ke 1 orang ya ✨";
+            }
+
+            $jawabanAi = $this->tanyaDenganAi($pertanyaan, $riwayat, $instruksiKonteks);
+
+            return $this->responTanya($pertanyaan, $jawabanAi ?? $pesanDefault, 200, $ip);
+        }
+
+        $profil = $hasil[0];
+        $minatRaw = trim((string) ($profil['minat_bakat'] ?? ''));
+        if ($minatRaw === '' || $minatRaw === '-' || strtolower($minatRaw) === 'null') {
+            unset($profil['minat_bakat']);
+        }
+
+        $jawabanAi = $this->tanyaDenganAi($pertanyaan, $riwayat, json_encode($profil, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        if ($jawabanAi !== null) {
+            return $this->responTanya($pertanyaan, $jawabanAi, 200, $ip);
         }
 
         return $this->responTanya($pertanyaan, $this->formatHasilPencarian($hasil), 200, $ip);
@@ -296,7 +346,9 @@ INSTRUKSI;
         $teks = preg_replace('/\bpti\b/u', 'pendidikan teknologi informasi', $teks) ?? $teks;
         $teks = preg_replace('/\bsi\b/u', 'sistem informasi', $teks) ?? $teks;
         $kataBerhenti = ['cari', 'carikan', 'mahasiswa', 'mhs', 'data', 'dengan', 'berdasarkan', 'angkatan', 'prodi', 'program', 'studi', 'nama', 'nim', 'kamu', 'anda', 'kenal', 'mengenal', 'tahu', 'tau', 'apakah', 'siapa', 'apa', 'yang', 'ini', 'itu', 'tentang', 'tolong', 'bisa', 'dong', 'lagi', 'sedang', 'ngapain', 'kabar', 'gimana', 'bagaimana', 'mau', 'ingin', 'bantu', 'jawab', 'jawaban', 'terus', 'ya', 'kan'];
-        $kataKunci = array_values(array_filter(preg_split('/\s+/u', $teks) ?: [], fn($kata) => $kata !== '' && !in_array($kata, $kataBerhenti, true) && !in_array($kata, $tahunFilter, true)));
+        $kataKunciRaw = array_values(array_filter(preg_split('/\s+/u', $teks) ?: [], fn($kata) => $kata !== '' && !in_array($kata, $kataBerhenti, true) && !in_array($kata, $tahunFilter, true)));
+        $kataMultiChar = array_values(array_filter($kataKunciRaw, fn($k) => mb_strlen($k) > 1));
+        $kataKunci = count($kataMultiChar) > 0 ? $kataMultiChar : $kataKunciRaw;
         $hasil = [];
 
         foreach ($angkatan as $tahun => $mahasiswa) {
@@ -316,7 +368,7 @@ INSTRUKSI;
                 $nilaiCari = mb_strtolower(implode(' ', array_map('strval', $data)));
                 $cocok = true;
                 foreach ($kataKunci as $kata) {
-                    if (mb_stripos($nilaiCari, $kata) === false) {
+                    if (! $this->cocokKataFuzzy($kata, $nilaiCari)) {
                         $cocok = false;
                         break;
                     }
@@ -352,71 +404,40 @@ INSTRUKSI;
     {
         $jumlah = count($hasil);
 
-        if ($jumlah === 1) {
-            $m = $hasil[0];
-            $nama = $m['nama'] ?? 'Nama tidak tersedia';
-            $prodi = $m['prodi'] ?? 'Prodi tidak tersedia';
-            $angkatan = $m['angkatan'] ?? '-';
-            $nim = $m['nim'] ?? 'Belum tercatat';
-
-            $rawMinat = isset($m['minat_bakat']) ? trim((string) $m['minat_bakat']) : '';
-            $adaMinat = $rawMinat !== '' && $rawMinat !== '-' && strtolower($rawMinat) !== 'null';
-            $minatTeks = $adaMinat ? $rawMinat : '';
-
-            $tambahanMinatKalimat = $adaMinat ? " Memiliki minat & bakat di bidang **{$minatTeks}**." : "";
-            $tambahanMinatBiasa = $adaMinat ? " (Minat & bakat: {$minatTeks})" : "";
-            $tambahanMinatList = $adaMinat ? "\n• **Minat & Bakat**: {$minatTeks}" : "";
-
-            $variasi = [
-                "Ini data yang aku temukan!\n\n• **Nama**: {$nama}\n• **NIM**: {$nim}\n• **Prodi**: {$prodi}\n• **Angkatan**: {$angkatan}{$tambahanMinatList}",
-                "Ketemu! **{$nama}** tercatat sebagai mahasiswa {$prodi} angkatan {$angkatan} dengan NIM **{$nim}**." . $tambahanMinatKalimat,
-                "Aku berhasil menemukan datanya! **{$nama}** (NIM: **{$nim}**) merupakan mahasiswa {$prodi} angkatan {$angkatan}" . $tambahanMinatBiasa . ".",
-                "Berikut informasi mahasiswa yang kamu cari:\n- **Nama**: {$nama}\n- **Prodi**: {$prodi}\n- **Angkatan**: {$angkatan}\n- **NIM**: {$nim}" . ($adaMinat ? "\n- **Minat & Bakat**: {$minatTeks}" : ""),
-                "**{$nama}** tercatat di UNG sebagai mahasiswa program studi {$prodi} angkatan {$angkatan} dengan NIM **{$nim}**" . $tambahanMinatBiasa . ".",
-            ];
-
-            return $variasi[array_rand($variasi)];
+        if ($jumlah > 10) {
+            return "Aku menemukan banyak sekali data mahasiswa yang cocok dengan pencarianmu. Coba gunakan nama lengkap, NIM, prodi, atau angkatan agar pencariannya lebih spesifik ke 1 orang ya ✨";
         }
 
-        if ($jumlah <= 5) {
-            $baris = ["Aku menemukan **{$jumlah} data** yang cocok. Berikut daftarnya:", ''];
-            foreach ($hasil as $i => $m) {
-                $no = $i + 1;
-                $nama = $m['nama'] ?? 'Nama tidak tersedia';
-                $prodi = $m['prodi'] ?? '-';
-                $angkatan = $m['angkatan'] ?? '-';
-                $nim = $m['nim'] ?? '-';
-
-                $rawMinat = isset($m['minat_bakat']) ? trim((string) $m['minat_bakat']) : '';
-                $adaMinat = $rawMinat !== '' && $rawMinat !== '-' && strtolower($rawMinat) !== 'null';
-                $minatStr = $adaMinat ? " | Minat: {$rawMinat}" : "";
-
-                $baris[] = "{$no}. **{$nama}** — {$prodi} ({$angkatan}) | NIM: **{$nim}**{$minatStr}";
-            }
-            $baris[] = '';
-            $baris[] = '_Gunakan nama lengkap atau NIM spesifik jika ingin mencari salah satu secara khusus._';
-
-            return implode("\n", $baris);
+        if ($jumlah > 1) {
+            return "Aku menemukan {$jumlah} data mahasiswa yang cocok dengan kata kunci tersebut. Coba gunakan nama lengkap, NIM, prodi, atau angkatan agar pencariannya lebih spesifik ke 1 orang ya ✨";
         }
 
-        $baris = ["Aku menemukan **{$jumlah} data** yang cocok, jadi hasilnya masih cukup banyak.", ''];
-        foreach (array_slice($hasil, 0, 5) as $i => $m) {
-            $no = $i + 1;
-            $nama = $m['nama'] ?? 'Nama tidak tersedia';
-            $prodi = $m['prodi'] ?? '-';
-            $angkatan = $m['angkatan'] ?? '-';
-            $nim = $m['nim'] ?? '-';
+        $m = $hasil[0];
+        $nama = $m['nama'] ?? 'Nama tidak tersedia';
+        $prodi = $m['prodi'] ?? 'Prodi tidak tersedia';
+        $fakultas = $m['fakul'] ?? $m['fakultas'] ?? 'Fakultas tidak tersedia';
+        $angkatan = $m['angkatan'] ?? '-';
+        $nim = $m['nim'] ?? 'Belum tercatat';
 
-            $rawMinat = isset($m['minat_bakat']) ? trim((string) $m['minat_bakat']) : '';
-            $adaMinat = $rawMinat !== '' && $rawMinat !== '-' && strtolower($rawMinat) !== 'null';
-            $minatStr = $adaMinat ? " | Minat: {$rawMinat}" : "";
+        $rawMinat = isset($m['minat_bakat']) ? trim((string) $m['minat_bakat']) : '';
+        $adaMinat = $rawMinat !== '' && $rawMinat !== '-' && strtolower($rawMinat) !== 'null';
+        $minatTeks = $adaMinat ? $rawMinat : '';
 
-            $baris[] = "{$no}. **{$nama}** — {$prodi} ({$angkatan}) | NIM: **{$nim}**{$minatStr}";
-        }
-        $baris[] = '';
-        $baris[] = '_Menampilkan 5 hasil pertama. Coba perjelas dengan nama lengkap, prodi, atau NIM spesifik._';
+        $tambahanMinatKalimat = $adaMinat ? " Memiliki minat & bakat di bidang **{$minatTeks}**." : "";
+        $tambahanMinatBiasa = $adaMinat ? " (Minat & bakat: {$minatTeks})" : "";
+        $tambahanMinatList = $adaMinat ? "\n• **Minat & Bakat**: {$minatTeks}" : "";
 
-        return implode("\n", $baris);
+        $kesimpulan = "\n\nJadi, **{$nama}** merupakan mahasiswa **{$prodi}** angkatan **{$angkatan}** di **{$fakultas}**, Universitas Negeri Gorontalo ✨";
+
+        $variasi = [
+            "Hai! 😊 Ini dia data mahasiswa yang kamu cari:\n\n• **Nama**: {$nama}\n• **NIM**: {$nim}\n• **Prodi**: {$prodi}\n• **Fakultas**: {$fakultas}\n• **Angkatan**: {$angkatan}{$tambahanMinatList}" . $kesimpulan,
+            "Yay! Ketemu nih 🎓 **{$nama}** tercatat sebagai mahasiswa {$prodi} ({$fakultas}) angkatan {$angkatan} dengan NIM **{$nim}**." . $tambahanMinatKalimat . $kesimpulan,
+            "Aku berhasil menemukan datanya! 😃 **{$nama}** (NIM: **{$nim}**) merupakan mahasiswa {$prodi} dari {$fakultas} angkatan {$angkatan}" . $tambahanMinatBiasa . "." . $kesimpulan,
+            "Berikut informasi mahasiswa yang kamu cari ya ✨:\n• **Nama**: {$nama}\n• **Prodi**: {$prodi}\n• **Fakultas**: {$fakultas}\n• **Angkatan**: {$angkatan}\n• **NIM**: {$nim}" . ($adaMinat ? "\n• **Minat & Bakat**: {$minatTeks}" : "") . $kesimpulan,
+            "Ini dia! **{$nama}** tercatat di UNG sebagai mahasiswa program studi {$prodi} ({$fakultas}) angkatan {$angkatan} dengan NIM **{$nim}**" . $tambahanMinatBiasa . "." . $kesimpulan,
+        ];
+
+        return $variasi[array_rand($variasi)];
     }
 
     private function menyapaDexa(string $pertanyaan): bool
@@ -488,6 +509,96 @@ INSTRUKSI;
         $pertanyaan = trim($pertanyaan);
 
         return preg_match('/^(?:kamu|anda|dexa)\s+(?:itu\s+)?(?:apa|siapa|bot apa|bisa apa|ngapain|tentang apa)[?!.,\s]*$|^(?:apa|siapa)\s+(?:itu\s+)?(?:kamu|anda|dexa)[?!.,\s]*$|^(?:kamu|anda|dexa)\s+(?:ini\s+)?(?:bot|chatbot)\s+apa[?!.,\s]*$/i', $pertanyaan) === 1;
+    }
+
+    private function cocokKataFuzzy(string $kataCari, string $teksTarget): bool
+    {
+        $kataCari = mb_strtolower($kataCari);
+        $teksTarget = mb_strtolower($teksTarget);
+
+        if (mb_strlen($kataCari) <= 1) {
+            return preg_match('/\b' . preg_quote($kataCari, '/') . '\b/u', $teksTarget) === 1;
+        }
+
+        if (mb_stripos($teksTarget, $kataCari) !== false) {
+            return true;
+        }
+
+        if (mb_strlen($kataCari) < 3) {
+            return false;
+        }
+
+        $kataTargetDaftar = preg_split('/\s+/u', $teksTarget) ?: [];
+        foreach ($kataTargetDaftar as $targetWord) {
+            $targetWord = trim($targetWord);
+            if (mb_strlen($targetWord) < 3) {
+                continue;
+            }
+
+            if (mb_stripos($targetWord, $kataCari) === 0 || mb_stripos($kataCari, $targetWord) === 0) {
+                return true;
+            }
+
+            $panjang = max(mb_strlen($kataCari), mb_strlen($targetWord));
+            $lev = levenshtein($kataCari, $targetWord);
+
+            if (($lev / $panjang) <= 0.25) {
+                if ($lev === 1 || mb_substr($kataCari, 0, 1) === mb_substr($targetWord, 0, 1)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private function tanyaDenganAi(string $pertanyaan, array $riwayat, ?string $konteksData = null): ?string
+    {
+        $apiKey = trim((string) config('services.groq.key'));
+        if ($apiKey === '') {
+            return null;
+        }
+
+        $model = config('services.groq.model', 'llama-3.3-70b-versatile');
+
+        $systemPrompt = self::INSTRUKSI_DEXA;
+        if ($konteksData !== null && $konteksData !== '') {
+            $systemPrompt .= "\n\n[DATA FAKTA MAHASISWA HASIL PENCARIAN SYSTEM]:\n" . $konteksData;
+            $systemPrompt .= "\nInstruksi khusus: Susun balasan tentang mahasiswa tersebut secara DESKRIPTIF dan mengalir dengan gaya Si Dexa. DILARANG KERAS menggunakan format TABEL Markdown (jangan gunakan '|'). Sampaikan data mahasiswa tersebut (Nama, NIM, Prodi, Fakultas, Angkatan, serta Minat & Bakat HANYA JIKA ADA field 'minat_bakat' di data JSON). Jika field 'minat_bakat' tidak ada di data JSON, SAMA SEKALI DILARANG menyebutkan kata 'minat' atau 'bakat'! WAJIB sertakan 1 kalimat kesimpulan ramah di bagian paling akhir balasan (contoh: 'Jadi, [Nama] merupakan mahasiswa [Prodi] angkatan [Angkatan] di fakultas [Fakultas], Universitas Negeri Gorontalo ✨').";
+        }
+
+        $messages = [
+            ['role' => 'system', 'content' => $systemPrompt],
+        ];
+
+        foreach ($riwayat as $p) {
+            if (isset($p['role'], $p['content'])) {
+                $messages[] = ['role' => (string) $p['role'], 'content' => (string) $p['content']];
+            }
+        }
+
+        $messages[] = ['role' => 'user', 'content' => $pertanyaan];
+
+        try {
+            $respons = Http::withToken($apiKey)
+                ->timeout(12)
+                ->post('https://api.groq.com/openai/v1/chat/completions', [
+                    'model' => $model,
+                    'messages' => $messages,
+                    'temperature' => 0.6,
+                ]);
+
+            if ($respons->successful()) {
+                $isi = $respons->json('choices.0.message.content');
+                if (is_string($isi) && trim($isi) !== '') {
+                    return trim($isi);
+                }
+            }
+        } catch (\Throwable $e) {
+            logger()->error('Gagal panggil Groq AI: ' . $e->getMessage());
+        }
+
+        return null;
     }
 
     private function responTanya(string $pertanyaan, string $pesan, int $status = 200, ?string $ip = null): JsonResponse
