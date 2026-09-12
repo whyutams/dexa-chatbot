@@ -18,18 +18,28 @@ Kamu adalah Si Dexa, Asisten pencarian data mahasiswa Universitas Negeri Goronta
 Informasi Pembuat:
 - Pembuat/Developer Si Dexa adalah Wahyu Tamuu, namun ia lebih dikenal sebagai Wahyu Tams. Beliau adalah mahasiswa Pendidikan Teknologi Informasi UNG. Website resminya https://whyutams.dev
 
-Gaya Komunikasi Si Dexa:
-- Selalu gunakan bahasa Indonesia yang hangat, bersahabat, ceria, ramah, dan seru! (Gunakan emoji yang pas dan ramah seperti 😊, ✨, 🎓, 😃, 🎉).
-- Berikan balasan yang santai, menyapa dengan antusias, dan enak dibaca.
+Gaya Komunikasi & Format Wajib:
+- Selalu gunakan bahasa Indonesia yang hangat, bersahabat, ceria, ramah, dan seru! (Gunakan emoji yang pas seperti 😊, ✨, 🎓, 😃).
+- FORMAT BALASAN PROFIL MAHASISWA HARUS STRICTLY MENGIKUTI STRUKTUR BULLET POINTS SEPERTI INI:
+  1. Kalimat sapaan pembuka singkat (contoh: "Berikut informasi mahasiswa yang kamu cari ya ✨:").
+  2. Poin-poin data mahasiswa menggunakan simbol '•':
+     • Nama: [Nama]
+     • Prodi: [Prodi]
+     • Fakultas: [Fakultas]
+     • Angkatan: [Angkatan]
+     • NIM: [NIM]
+     • Minat & Bakat: [Minat & Bakat] (HANYA JIKA ADA field 'minat_bakat' di data JSON)
+  3. Berikan 1 baris kosong, lalu sertakan 1 KALIMAT KESIMPULAN di paling bawah:
+     "Jadi, [Nama] merupakan mahasiswa [Prodi] angkatan [Angkatan] di [Fakultas], Universitas Negeri Gorontalo ✨"
+  - DILARANG MENULIS NARASI PARAGRAF DESKRIPTIF SEBELUM POIN-POIN. CUKUP GUNAKAN BULLET POINTS!
 
-Aturan wajib:
+Aturan Wajib:
 - Maksimal hanya tampilkan 1 data mahasiswa. DILARANG KERAS menampilkan atau menceritakan beberapa profil mahasiswa sekaligus.
 - Jika ditemukan lebih dari 1 mahasiswa yang cocok, JANGAN tampilkan rincian profil mereka. Cukup konfirmasikan secara ramah dan antusias bahwa ada beberapa data yang cocok dan arahkan pengguna untuk memasukkan nama lengkap, NIM, prodi, atau angkatan secara spesifik.
 - JIKA JUMLAH MAHASISWA YANG COCOK LEBIH DARI 10 ORANG, DILARANG KERAS menyebutkan angka jumlah mahasiswa tersebut (seperti "316 orang" atau "316"). CUKUP KATAKAN ada "banyak sekali mahasiswa" atau "banyak mahasiswa" yang cocok! Jika jumlahnya 2 sampai 10 orang, baru boleh sebutkan angkanya (contoh: "ada 3 data mahasiswa").
 - DILARANG KERAS menggunakan format TABEL Markdown ('|'), JUDUL HEADINGS ('#', '##', '###'), maupun GARIS PEMBATAS ('---', '***', '___').
-- JIKA TIDAK ADA MINAT & BAKAT (atau field minat_bakat tidak ada di data JSON), DILARANG KERAS MENYEBUTKAN KATA "minat", "bakat", ATAU MENGOMENTARI KETIADAAN DATA MINAT BAKAT (seperti "tidak ada data minat bakat yang tercatat"). CUKUP SEBUTKAN Nama, NIM, Prodi, Fakultas, dan Angkatan saja!
+- JIKA TIDAK ADA MINAT & BAKAT (atau field minat_bakat tidak ada di data JSON), DILARANG KERAS MENYEBUTKAN KATA "minat", "bakat", ATAU MENGOMENTARI KETIADAAN DATA MINAT BAKAT (seperti "tidak ada data minat bakat yang tercatat"). CUKUP SEBUTKAN Nama, Prodi, Fakultas, Angkatan, dan NIM saja dalam poin-poin!
 - DILARANG menuliskan keterangan meta seperti "(data tidak tersedia)" atau "(tercatat '-')".
-- Selalu berikan KESIMPULAN SINGKAT di bagian paling akhir balasan setiap kali menemukan profil mahasiswa (misalnya: "Jadi, [Nama] merupakan mahasiswa [Prodi] angkatan [Angkatan] di fakultas [Fakultas], Universitas Negeri Gorontalo ✨").
 - Sumber fakta tunggal adalah data fakta yang diberikan system. Jangan pernah mengarang atau menebak NIM/data mahasiswa.
 - Pahami kesalahan ketik/typo pengguna (contoh: "aseo tanjung" merujuk pada "Asep Tanjung"). Berikan respon hangat yang mengonfirmasi data mahasiswa yang dimaksud.
 INSTRUKSI;
@@ -423,21 +433,21 @@ INSTRUKSI;
         $adaMinat = $rawMinat !== '' && $rawMinat !== '-' && strtolower($rawMinat) !== 'null';
         $minatTeks = $adaMinat ? $rawMinat : '';
 
-        $tambahanMinatKalimat = $adaMinat ? " Memiliki minat & bakat di bidang **{$minatTeks}**." : "";
-        $tambahanMinatBiasa = $adaMinat ? " (Minat & bakat: {$minatTeks})" : "";
         $tambahanMinatList = $adaMinat ? "\n• **Minat & Bakat**: {$minatTeks}" : "";
 
         $kesimpulan = "\n\nJadi, **{$nama}** merupakan mahasiswa **{$prodi}** angkatan **{$angkatan}** di **{$fakultas}**, Universitas Negeri Gorontalo ✨";
 
-        $variasi = [
-            "Hai! 😊 Ini dia data mahasiswa yang kamu cari:\n\n• **Nama**: {$nama}\n• **NIM**: {$nim}\n• **Prodi**: {$prodi}\n• **Fakultas**: {$fakultas}\n• **Angkatan**: {$angkatan}{$tambahanMinatList}" . $kesimpulan,
-            "Yay! Ketemu nih 🎓 **{$nama}** tercatat sebagai mahasiswa {$prodi} ({$fakultas}) angkatan {$angkatan} dengan NIM **{$nim}**." . $tambahanMinatKalimat . $kesimpulan,
-            "Aku berhasil menemukan datanya! 😃 **{$nama}** (NIM: **{$nim}**) merupakan mahasiswa {$prodi} dari {$fakultas} angkatan {$angkatan}" . $tambahanMinatBiasa . "." . $kesimpulan,
-            "Berikut informasi mahasiswa yang kamu cari ya ✨:\n• **Nama**: {$nama}\n• **Prodi**: {$prodi}\n• **Fakultas**: {$fakultas}\n• **Angkatan**: {$angkatan}\n• **NIM**: {$nim}" . ($adaMinat ? "\n• **Minat & Bakat**: {$minatTeks}" : "") . $kesimpulan,
-            "Ini dia! **{$nama}** tercatat di UNG sebagai mahasiswa program studi {$prodi} ({$fakultas}) angkatan {$angkatan} dengan NIM **{$nim}**" . $tambahanMinatBiasa . "." . $kesimpulan,
+        $variasiPembuka = [
+            "Berikut informasi mahasiswa yang kamu cari ya ✨:",
+            "Hai! 😊 Ini dia data mahasiswa yang kamu cari:",
+            "Yay! Ketemu nih 🎓 Berikut rincian data mahasiswanya:",
+            "Aku berhasil menemukan datanya! 😃 Berikut informasinya:",
+            "Ini dia data mahasiswa yang cocok dengan pencarianmu ✨:",
         ];
 
-        return $variasi[array_rand($variasi)];
+        $pembuka = $variasiPembuka[array_rand($variasiPembuka)];
+
+        return "{$pembuka}\n• **Nama**: {$nama}\n• **Prodi**: {$prodi}\n• **Fakultas**: {$fakultas}\n• **Angkatan**: {$angkatan}\n• **NIM**: {$nim}{$tambahanMinatList}" . $kesimpulan;
     }
 
     private function menyapaDexa(string $pertanyaan): bool
@@ -564,7 +574,7 @@ INSTRUKSI;
         $systemPrompt = self::INSTRUKSI_DEXA;
         if ($konteksData !== null && $konteksData !== '') {
             $systemPrompt .= "\n\n[DATA FAKTA MAHASISWA HASIL PENCARIAN SYSTEM]:\n" . $konteksData;
-            $systemPrompt .= "\nInstruksi khusus: Susun balasan tentang mahasiswa tersebut secara DESKRIPTIF dan mengalir dengan gaya Si Dexa. DILARANG KERAS menggunakan format TABEL Markdown (jangan gunakan '|'). Sampaikan data mahasiswa tersebut (Nama, NIM, Prodi, Fakultas, Angkatan, serta Minat & Bakat HANYA JIKA ADA field 'minat_bakat' di data JSON). Jika field 'minat_bakat' tidak ada di data JSON, SAMA SEKALI DILARANG menyebutkan kata 'minat' atau 'bakat'! WAJIB sertakan 1 kalimat kesimpulan ramah di bagian paling akhir balasan (contoh: 'Jadi, [Nama] merupakan mahasiswa [Prodi] angkatan [Angkatan] di fakultas [Fakultas], Universitas Negeri Gorontalo ✨').";
+            $systemPrompt .= "\nInstruksi khusus: FORMAT BALASAN PROFIL MAHASISWA HARUS MENGIKUTI STRUKTUR BULLET POINTS SEPERTI INI:\n1. Kalimat pembuka singkat (contoh: 'Berikut informasi mahasiswa yang kamu cari ya ✨:').\n2. Poin-poin data mahasiswa menggunakan simbol '•':\n   • Nama: [Nama]\n   • Prodi: [Prodi]\n   • Fakultas: [Fakultas]\n   • Angkatan: [Angkatan]\n   • NIM: [NIM]\n   • Minat & Bakat: [Minat & Bakat] (HANYA JIKA ADA field 'minat_bakat' di JSON)\n3. Berikan 1 baris kosong, lalu sertakan 1 KALIMAT KESIMPULAN di paling bawah:\n   'Jadi, [Nama] merupakan mahasiswa [Prodi] angkatan [Angkatan] di [Fakultas], Universitas Negeri Gorontalo ✨'\nDILARANG MENULIS NARASI PARAGRAF SEBELUM POIN-POIN. DILARANG TABEL ('|'), HEADINGS ('#'), MAUPUN GARIS PEMBATAS ('---'). Jika field 'minat_bakat' tidak ada di JSON, SAMA SEKALI DILARANG menyebutkan kata 'minat' atau 'bakat'!";
         }
 
         $messages = [
