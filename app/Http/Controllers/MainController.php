@@ -225,6 +225,14 @@ INSTRUKSI;
             }
         }
 
+        if ($name === 'views') {
+            try {
+                return (int) DB::table('dexa_viewers')->count();
+            } catch (\Throwable) {
+                return 0;
+            }
+        }
+
         return (int) DB::table('dexa_counters')->where('name', $name)->value('total');
     }
 
@@ -234,10 +242,26 @@ INSTRUKSI;
             return $this->ambilCounter('chats');
         }
 
-        DB::table('dexa_counters')->updateOrInsert(
-            ['name' => $name],
-            ['total' => 0, 'created_at' => now(), 'updated_at' => now()]
-        );
+        if ($name === 'views') {
+            $totalViews = $this->ambilCounter('views');
+            try {
+                DB::table('dexa_counters')->updateOrInsert(
+                    ['name' => 'views'],
+                    ['total' => $totalViews, 'updated_at' => now()]
+                );
+            } catch (\Throwable) {}
+
+            return $totalViews;
+        }
+
+        if (! DB::table('dexa_counters')->where('name', $name)->exists()) {
+            DB::table('dexa_counters')->insert([
+                'name' => $name,
+                'total' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
         DB::table('dexa_counters')->where('name', $name)->increment('total');
 
         return $this->ambilCounter($name);
