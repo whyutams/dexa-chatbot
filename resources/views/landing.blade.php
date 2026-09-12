@@ -61,6 +61,7 @@
                 <p class="mb-4 text-sm font-bold uppercase text-coral">Dexa Chatbot (BETA)</p>
                 <h1 class="font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl">Si <span class="text-coral">Dexa</span>, Chatbot Asisten Pencarian Mahasiswa UNG</h1>
                 <p class="mt-5 max-w-sm leading-7 text-ink/65">Salah satu fitur populer <a href="https://dexafyx.web.app" target="_blank" rel="noopener noreferrer" class="font-semibold text-coral underline decoration-coral/50 underline-offset-2 hover:text-[#435889]"><strong>Dexafy</strong></a> pada 2024, kini hadir kembali sebagai pencarian mahasiswa Universitas Negeri Gorontalo.</p>
+                <p class="mt-4 leading-7 text-coral font-bold">Coming soon! Next update informasi mahasiswa disertakan dengan foto mahasiswa.</p>
             </div>
 
             <section class="flex h-[min(680px,76vh)] min-h-[520px] flex-col overflow-hidden rounded-[2rem] border border-[#e0e2ef] bg-white/90 shadow-[0_24px_80px_rgba(32,45,89,.14)] backdrop-blur" data-aos="fade-left" data-aos-delay="100">
