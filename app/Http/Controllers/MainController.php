@@ -444,6 +444,7 @@ INSTRUKSI;
 
     private function responTanya(string $pertanyaan, string $pesan, int $status = 200, ?string $ip = null): JsonResponse
     {
+        $jumlahChat = 0;
         if ($pertanyaan !== '') {
             try {
                 DB::table('dexa_chats')->insert([
@@ -455,8 +456,17 @@ INSTRUKSI;
                 ]);
             } catch (\Throwable) {
             }
+
+            try {
+                $jumlahChat = $this->naikkanCounter('chats');
+            } catch (\Throwable) {
+                $jumlahChat = $this->ambilCounter('chats');
+            }
         }
 
-        return response()->json(['pesan' => $pesan], $status);
+        return response()->json([
+            'pesan' => $pesan,
+            'jumlahChat' => $jumlahChat,
+        ], $status);
     }
 }
