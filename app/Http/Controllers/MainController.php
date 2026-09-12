@@ -12,6 +12,70 @@ class MainController extends Controller
 {
     private const ANGKATAN_DIDUKUNG = ['2021', '2022', '2023'];
 
+    private const NIM_MAP = [
+        '1114' => ['prodi' => 'S1 - Bimbingan Dan Konseling', 'fakultas' => 'Fakultas Ilmu Pendidikan'],
+        '1214' => ['prodi' => 'S1 - Pendidikan Masyarakat', 'fakultas' => 'Fakultas Ilmu Pendidikan'],
+        '1314' => ['prodi' => 'S1 - Manajemen Pendidikan', 'fakultas' => 'Fakultas Ilmu Pendidikan'],
+        '1514' => ['prodi' => 'S1 - Pendidikan Guru Sekolah Dasar', 'fakultas' => 'Fakultas Ilmu Pendidikan'],
+        '1614' => ['prodi' => 'S1 - Pendidikan Guru Pendidikan Anak Usia Dini', 'fakultas' => 'Fakultas Ilmu Pendidikan'],
+        '1714' => ['prodi' => 'S1 - Psikologi', 'fakultas' => 'Fakultas Ilmu Pendidikan'],
+        '2214' => ['prodi' => 'S1 - Pendidikan Pancasila Dan Kewarganegaraan', 'fakultas' => 'Fakultas Ilmu Sosial'],
+        '2314' => ['prodi' => 'S1 - Pendidikan Sejarah', 'fakultas' => 'Fakultas Ilmu Sosial'],
+        '2414' => ['prodi' => 'S1 - Administrasi Publik', 'fakultas' => 'Fakultas Ilmu Sosial'],
+        '2814' => ['prodi' => 'S1 - Sosiologi', 'fakultas' => 'Fakultas Ilmu Sosial'],
+        '2914' => ['prodi' => 'S1 - Ilmu Komunikasi', 'fakultas' => 'Fakultas Ilmu Sosial'],
+        '3114' => ['prodi' => 'S1 - Pendidikan Bahasa Dan Sastra Indonesia', 'fakultas' => 'Fakultas Sastra Dan Budaya'],
+        '3214' => ['prodi' => 'S1 - Pendidikan Bahasa Inggris', 'fakultas' => 'Fakultas Sastra Dan Budaya'],
+        '3313' => ['prodi' => 'D3 - Pariwisata', 'fakultas' => 'Fakultas Sastra Dan Budaya'],
+        '3414' => ['prodi' => 'S1 - Pendidikan Seni Drama Tari Dan Musik', 'fakultas' => 'Fakultas Sastra Dan Budaya'],
+        '4114' => ['prodi' => 'S1 - Pendidikan Matematika', 'fakultas' => 'Fakultas Matematika Dan Ilmu Pengetahuan Alam'],
+        '4124' => ['prodi' => 'S1 - Matematika', 'fakultas' => 'Fakultas Matematika Dan Ilmu Pengetahuan Alam'],
+        '4134' => ['prodi' => 'S1 - Statistika', 'fakultas' => 'Fakultas Matematika Dan Ilmu Pengetahuan Alam'],
+        '4214' => ['prodi' => 'S1 - Pendidikan Fisika', 'fakultas' => 'Fakultas Matematika Dan Ilmu Pengetahuan Alam'],
+        '4224' => ['prodi' => 'S1 - Fisika', 'fakultas' => 'Fakultas Matematika Dan Ilmu Pengetahuan Alam'],
+        '4234' => ['prodi' => 'S1 - Teknik Geofisika', 'fakultas' => 'Fakultas Matematika Dan Ilmu Pengetahuan Alam'],
+        '4314' => ['prodi' => 'S1 - Pendidikan Biologi', 'fakultas' => 'Fakultas Matematika Dan Ilmu Pengetahuan Alam'],
+        '4324' => ['prodi' => 'S1 - Biologi', 'fakultas' => 'Fakultas Matematika Dan Ilmu Pengetahuan Alam'],
+        '4414' => ['prodi' => 'S1 - Pendidikan Kimia', 'fakultas' => 'Fakultas Matematika Dan Ilmu Pengetahuan Alam'],
+        '4424' => ['prodi' => 'S1 - Kimia', 'fakultas' => 'Fakultas Matematika Dan Ilmu Pengetahuan Alam'],
+        '4514' => ['prodi' => 'S1 - Pendidikan Geografi', 'fakultas' => 'Fakultas Matematika Dan Ilmu Pengetahuan Alam'],
+        '4524' => ['prodi' => 'S1 - Teknik Geologi', 'fakultas' => 'Fakultas Matematika Dan Ilmu Pengetahuan Alam'],
+        '4614' => ['prodi' => 'S1 - Pendidikan Ipa', 'fakultas' => 'Fakultas Matematika Dan Ilmu Pengetahuan Alam'],
+        '5114' => ['prodi' => 'S1 - Teknik Sipil', 'fakultas' => 'Fakultas Teknik'],
+        '5124' => ['prodi' => 'S1 - Pendidikan Vokasional Konstruksi Bangunan', 'fakultas' => 'Fakultas Teknik'],
+        '5214' => ['prodi' => 'S1 - Teknik Elektro', 'fakultas' => 'Fakultas Teknik'],
+        '5314' => ['prodi' => 'S1 - Sistem Informasi', 'fakultas' => 'Fakultas Teknik'],
+        '5324' => ['prodi' => 'S1 - Pendidikan Teknologi Informasi', 'fakultas' => 'Fakultas Teknik'],
+        '5414' => ['prodi' => 'S1 - Pendidikan Seni Rupa', 'fakultas' => 'Fakultas Teknik'],
+        '5514' => ['prodi' => 'S1 - Teknik Arsitektur', 'fakultas' => 'Fakultas Teknik'],
+        '5524' => ['prodi' => 'S1 - Perencanaan Wilayah Dan Kota', 'fakultas' => 'Fakultas Teknik'],
+        '5614' => ['prodi' => 'S1 - Teknik Industri', 'fakultas' => 'Fakultas Teknik'],
+        '5624' => ['prodi' => 'S1 - Pendidikan Teknik Mesin', 'fakultas' => 'Fakultas Teknik'],
+        '6114' => ['prodi' => 'S1 - Agroteknologi', 'fakultas' => 'Fakultas Pertanian'],
+        '6214' => ['prodi' => 'S1 - Peternakan', 'fakultas' => 'Fakultas Pertanian'],
+        '6414' => ['prodi' => 'S1 - Agribisnis', 'fakultas' => 'Fakultas Pertanian'],
+        '6514' => ['prodi' => 'S1 - Teknologi Pangan', 'fakultas' => 'Fakultas Pertanian'],
+        '8114' => ['prodi' => 'S1 - Kesehatan Masyarakat', 'fakultas' => 'Fakultas Olahraga Dan Kesehatan'],
+        '8213' => ['prodi' => 'D3 - Farmasi', 'fakultas' => 'Fakultas Olahraga Dan Kesehatan'],
+        '8214' => ['prodi' => 'S1 - Farmasi', 'fakultas' => 'Fakultas Olahraga Dan Kesehatan'],
+        '8314' => ['prodi' => 'S1 - Pendidikan Jasmani Kesehatan Dan Rekreasi', 'fakultas' => 'Fakultas Olahraga Dan Kesehatan'],
+        '8324' => ['prodi' => 'S1 - Pendidikan Kepelatihan Olahraga', 'fakultas' => 'Fakultas Olahraga Dan Kesehatan'],
+        '8414' => ['prodi' => 'S1 - Keperawatan', 'fakultas' => 'Fakultas Olahraga Dan Kesehatan'],
+        '9114' => ['prodi' => 'S1 - Pendidikan Ekonomi', 'fakultas' => 'Fakultas Ekonomi'],
+        '9214' => ['prodi' => 'S1 - Akuntansi', 'fakultas' => 'Fakultas Ekonomi'],
+        '9314' => ['prodi' => 'S1 - Manajemen', 'fakultas' => 'Fakultas Ekonomi'],
+        '9414' => ['prodi' => 'S1 - Ekonomi Pembangunan', 'fakultas' => 'Fakultas Ekonomi'],
+        '10114' => ['prodi' => 'S1 - Ilmu Hukum', 'fakultas' => 'Fakultas Hukum'],
+        '11114' => ['prodi' => 'S1 - Budidaya Perairan', 'fakultas' => 'Fakultas Perikanan Dan Ilmu Kelautan'],
+        '11214' => ['prodi' => 'S1 - Teknologi Hasil Perikanan', 'fakultas' => 'Fakultas Perikanan Dan Ilmu Kelautan'],
+        '11314' => ['prodi' => 'S1 - Manajemen Sumber Daya Perairan', 'fakultas' => 'Fakultas Perikanan Dan Ilmu Kelautan'],
+        '11414' => ['prodi' => 'S1 - Ilmu Kelautan', 'fakultas' => 'Fakultas Perikanan Dan Ilmu Kelautan'],
+        '13114' => ['prodi' => 'S1 - Kedokteran', 'fakultas' => 'Fakultas Kedokteran'],
+        '15214' => ['prodi' => 'D4 - Teknologi Rekayasa Perangkat Lunak', 'fakultas' => 'Program Pendidikan Vokasi'],
+        '15314' => ['prodi' => 'D4 - Terapi Gigi', 'fakultas' => 'Program Pendidikan Vokasi'],
+        '15414' => ['prodi' => 'D4 - Pengelolaan Pengendalian Pencemaran Lingkungan', 'fakultas' => 'Program Pendidikan Vokasi'],
+    ];
+
     private const INSTRUKSI_DEXA = <<<'INSTRUKSI'
 Kamu adalah Si Dexa, Asisten pencarian data mahasiswa Universitas Negeri Gorontalo yang sangat ramah, hangat, friendly, ceria, dan seru!
 
@@ -379,6 +443,49 @@ INSTRUKSI;
     private function cariMahasiswa(array $angkatan, string $pertanyaan): array
     {
         $teks = mb_strtolower($pertanyaan);
+        
+        // 1. Cek apakah ada pola NIM (digit 6 - 10 angka)
+        if (preg_match_all('/\b(\d{6,10})\b/', $teks, $nimMatches)) {
+            foreach ($nimMatches[1] as $nimTarget) {
+                // Cari exact match di data JSON
+                foreach ($angkatan as $tahun => $mahasiswa) {
+                    if (!is_array($mahasiswa)) {
+                        continue;
+                    }
+                    foreach ($mahasiswa as $data) {
+                        if (is_array($data) && isset($data['nim']) && (string)$data['nim'] === $nimTarget) {
+                            $data['angkatan'] = (string)$tahun;
+                            return [$data];
+                        }
+                    }
+                }
+
+                // Jika tidak ditemukan di JSON, parsing struktur NIM UNG (contoh: 531423001 -> 5314 | 23 | 001)
+                if (preg_match('/^(\d{3,5})(21|22|23)(\d{3})$/', $nimTarget, $mNim)) {
+                    $prefix = $mNim[1];
+                    $th = $mNim[2];
+                    $urut = $mNim[3];
+
+                    if (isset(self::NIM_MAP[$prefix])) {
+                        $info = self::NIM_MAP[$prefix];
+                        return [
+                            [
+                                'nama' => "Mahasiswa NIM {$nimTarget}",
+                                'nim' => $nimTarget,
+                                'prodi' => $info['prodi'],
+                                'fakultas' => $info['fakultas'],
+                                'angkatan' => '20' . $th,
+                                'is_format_nim' => true,
+                            ]
+                        ];
+                    }
+                }
+            }
+
+            // Jika user secara spesifik memasukkan angka NIM tapi tidak ditemukan dan tidak valid struktur NIM
+            return [];
+        }
+
         $teks = preg_replace('/[^\p{L}\p{N}\s-]/u', ' ', $teks) ?? $teks;
         preg_match_all('/\b(2021|2022|2023)\b/', $teks, $tahunDitemukan);
         $tahunFilter = $tahunDitemukan[1] ?? [];
@@ -452,6 +559,18 @@ INSTRUKSI;
         }
 
         $m = $hasil[0];
+
+        if ($m['is_format_nim'] ?? false) {
+            $nim = $m['nim'];
+            $prodi = $m['prodi'];
+            $fakultas = $m['fakultas'];
+            $angkatan = $m['angkatan'];
+
+            $kesimpulan = "\n\nJadi, NIM **{$nim}** merupakan mahasiswa **{$prodi}** angkatan **{$angkatan}** di **{$fakultas}**, Universitas Negeri Gorontalo ✨";
+
+            return "Berdasarkan format NIM **{$nim}**, berikut rincian datanya ✨:\n• **NIM**: {$nim}\n• **Prodi**: {$prodi}\n• **Fakultas**: {$fakultas}\n• **Angkatan**: {$angkatan}" . $kesimpulan;
+        }
+
         $nama = $m['nama'] ?? 'Nama tidak tersedia';
         $prodi = $m['prodi'] ?? 'Prodi tidak tersedia';
         $fakultas = $m['fakul'] ?? $m['fakultas'] ?? 'Fakultas tidak tersedia';
