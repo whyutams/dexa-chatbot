@@ -150,11 +150,23 @@ INSTRUKSI;
 
     private function ambilCounter(string $name): int
     {
+        if ($name === 'chats') {
+            try {
+                return (int) DB::table('dexa_chats')->count();
+            } catch (\Throwable) {
+                return 0;
+            }
+        }
+
         return (int) DB::table('dexa_counters')->where('name', $name)->value('total');
     }
 
     private function naikkanCounter(string $name): int
     {
+        if ($name === 'chats') {
+            return $this->ambilCounter('chats');
+        }
+
         DB::table('dexa_counters')->updateOrInsert(
             ['name' => $name],
             ['total' => 0, 'created_at' => now(), 'updated_at' => now()]
@@ -444,7 +456,6 @@ INSTRUKSI;
 
     private function responTanya(string $pertanyaan, string $pesan, int $status = 200, ?string $ip = null): JsonResponse
     {
-        $jumlahChat = 0;
         if ($pertanyaan !== '') {
             try {
                 DB::table('dexa_chats')->insert([
@@ -454,19 +465,14 @@ INSTRUKSI;
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
-            } catch (\Throwable) {
-            }
-
-            try {
-                $jumlahChat = $this->naikkanCounter('chats');
-            } catch (\Throwable) {
-                $jumlahChat = $this->ambilCounter('chats');
+            } catch (\Throwable $e) {
+                logger()->error('Gagal simpan dexa_chats: ' . $e->getMessage());
             }
         }
 
         return response()->json([
             'pesan' => $pesan,
-            'jumlahChat' => $jumlahChat,
+            'jumlahChat' => $this->ambilCounter('chats'),
         ], $status);
     }
 }
