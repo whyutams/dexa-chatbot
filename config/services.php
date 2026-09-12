@@ -44,4 +44,8 @@ return [
         'url' => env('REST_API'),
     ],
 
+    'access' => [
+        'url' => env('URL_ACCESS'),
+    ],
+
 ];

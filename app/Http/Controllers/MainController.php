@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\View\View;
 
@@ -34,6 +35,8 @@ INSTRUKSI;
 
         return view('landing', [
             'versi' => (string) ($package['version'] ?? '0.0.0'),
+            'jumlahChat' => $this->ambilCounter('chats'),
+            'jumlahView' => $this->ambilCounter('views'),
         ]);
     }
 
@@ -145,6 +148,47 @@ INSTRUKSI;
         return response()->json([
             'pesan' => $this->formatHasilPencarian($hasil),
         ]);
+    }
+
+    public function catatChat(): JsonResponse
+    {
+        return response()->json(['jumlah' => $this->naikkanCounter('chats')]);
+    }
+
+    public function catatView(Request $request): JsonResponse
+    {
+        $ip = filter_var($request->input('ip'), FILTER_VALIDATE_IP);
+
+        if ($ip === false) {
+            return response()->json(['pesan' => 'IP tidak valid.'], 422);
+        }
+
+        $sudahTercatat = DB::table('dexa_viewers')->where('ip_address', $ip)->exists();
+
+        if ($sudahTercatat) {
+            DB::table('dexa_viewers')->where('ip_address', $ip)->update(['last_seen_at' => now(), 'updated_at' => now()]);
+        } else {
+            DB::table('dexa_viewers')->insert(['ip_address' => $ip, 'last_seen_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+            $this->naikkanCounter('views');
+        }
+
+        return response()->json(['jumlah' => $this->ambilCounter('views')]);
+    }
+
+    private function ambilCounter(string $name): int
+    {
+        return (int) DB::table('dexa_counters')->where('name', $name)->value('total');
+    }
+
+    private function naikkanCounter(string $name): int
+    {
+        DB::table('dexa_counters')->updateOrInsert(
+            ['name' => $name],
+            ['total' => 0, 'created_at' => now(), 'updated_at' => now()]
+        );
+        DB::table('dexa_counters')->where('name', $name)->increment('total');
+
+        return $this->ambilCounter($name);
     }
 
     private function bersihkanPertanyaan(string $pertanyaan): string
