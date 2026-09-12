@@ -103,7 +103,7 @@ INSTRUKSI;
         $data = $this->ambilDataMahasiswa();
 
         if ($data === null) {
-            return $this->responTanya($pertanyaan, 'Data mahasiswa tidak ditemukan atau belum tersedia.', 500, $ip);
+            return $this->responTanya($pertanyaan, 'Data mahasiswa tidak ditemukan atau belum tersedia.', 200, $ip);
         }
 
         if (! $this->memilikiPencarianSpesifik($pertanyaan)) {
