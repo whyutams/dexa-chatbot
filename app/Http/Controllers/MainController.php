@@ -113,11 +113,13 @@ INSTRUKSI;
         $hasil = $this->cariMahasiswa($data['mahasiswa']['angkatan'], $pertanyaan);
 
         if ($hasil === []) {
-            return $this->responTanya($pertanyaan, 'Aku tidak menemukan data yang cocok untuk nama tersebut. Kalau yang kamu cari adalah mahasiswa UNG, coba gunakan nama lengkap atau NIM spesifik agar pencariannya lebih akurat.', 200, $ip);
-        }
+            $variasiKosong = [
+                'Aku tidak menemukan data yang cocok untuk nama/NIM tersebut. Pastikan ejaan nama atau NIM sudah sesuai (angkatan 2021–2023).',
+                'Data mahasiswa tidak ditemukan. Coba gunakan nama lengkap atau NIM spesifik agar pencariannya lebih akurat.',
+                'Hmm, aku belum menemukan data mahasiswa dengan kata kunci tersebut. Coba periksa kembali nama atau NIM yang dimasukkan.',
+            ];
 
-        if (count($hasil) > 1) {
-            return $this->responTanya($pertanyaan, 'Aku menemukan lebih dari satu data yang cocok, jadi belum bisa menampilkan hasilnya. Tambahkan nama depan dan nama belakang, atau gunakan NIM agar pencarian menjadi spesifik.', 200, $ip);
+            return $this->responTanya($pertanyaan, $variasiKosong[array_rand($variasiKosong)], 200, $ip);
         }
 
         return $this->responTanya($pertanyaan, $this->formatHasilPencarian($hasil), 200, $ip);
@@ -351,34 +353,68 @@ INSTRUKSI;
         $jumlah = count($hasil);
 
         if ($jumlah === 1) {
-            $mahasiswa = $hasil[0];
+            $m = $hasil[0];
+            $nama = $m['nama'] ?? 'Nama tidak tersedia';
+            $prodi = $m['prodi'] ?? 'Prodi tidak tersedia';
+            $angkatan = $m['angkatan'] ?? '-';
+            $nim = $m['nim'] ?? 'Belum tercatat';
 
-            return sprintf(
-                '**%s** merupakan mahasiswa %s angkatan %s dengan NIM %s.',
-                $mahasiswa['nama'] ?? 'Nama tidak tersedia',
-                $mahasiswa['prodi'] ?? 'Prodi tidak tersedia',
-                $mahasiswa['angkatan'] ?? '-',
-                $mahasiswa['nim'] ?? 'yang belum tercatat'
-            );
+            $rawMinat = isset($m['minat_bakat']) ? trim((string) $m['minat_bakat']) : '';
+            $adaMinat = $rawMinat !== '' && $rawMinat !== '-' && strtolower($rawMinat) !== 'null';
+            $minatTeks = $adaMinat ? $rawMinat : '';
+
+            $tambahanMinatKalimat = $adaMinat ? " Memiliki minat & bakat di bidang **{$minatTeks}**." : "";
+            $tambahanMinatBiasa = $adaMinat ? " (Minat & bakat: {$minatTeks})" : "";
+            $tambahanMinatList = $adaMinat ? "\n• **Minat & Bakat**: {$minatTeks}" : "";
+
+            $variasi = [
+                "Ini data yang aku temukan!\n\n• **Nama**: {$nama}\n• **NIM**: {$nim}\n• **Prodi**: {$prodi}\n• **Angkatan**: {$angkatan}{$tambahanMinatList}",
+                "Ketemu! **{$nama}** tercatat sebagai mahasiswa {$prodi} angkatan {$angkatan} dengan NIM **{$nim}**." . $tambahanMinatKalimat,
+                "Aku berhasil menemukan datanya! **{$nama}** (NIM: **{$nim}**) merupakan mahasiswa {$prodi} angkatan {$angkatan}" . $tambahanMinatBiasa . ".",
+                "Berikut informasi mahasiswa yang kamu cari:\n- **Nama**: {$nama}\n- **Prodi**: {$prodi}\n- **Angkatan**: {$angkatan}\n- **NIM**: {$nim}" . ($adaMinat ? "\n- **Minat & Bakat**: {$minatTeks}" : ""),
+                "**{$nama}** tercatat di UNG sebagai mahasiswa program studi {$prodi} angkatan {$angkatan} dengan NIM **{$nim}**" . $tambahanMinatBiasa . ".",
+            ];
+
+            return $variasi[array_rand($variasi)];
         }
 
-        $baris = ["Aku menemukan {$jumlah} data yang cocok, tetapi belum menampilkannya karena pencarian harus spesifik.", ''];
+        if ($jumlah <= 5) {
+            $baris = ["Aku menemukan **{$jumlah} data** yang cocok. Berikut daftarnya:", ''];
+            foreach ($hasil as $i => $m) {
+                $no = $i + 1;
+                $nama = $m['nama'] ?? 'Nama tidak tersedia';
+                $prodi = $m['prodi'] ?? '-';
+                $angkatan = $m['angkatan'] ?? '-';
+                $nim = $m['nim'] ?? '-';
 
-        foreach (array_slice($hasil, 0, 50) as $mahasiswa) {
-            $baris[] = sprintf(
-                '**%s** merupakan mahasiswa %s angkatan %s dengan NIM %s.',
-                $mahasiswa['nama'] ?? 'Nama tidak tersedia',
-                $mahasiswa['prodi'] ?? 'Prodi tidak tersedia',
-                $mahasiswa['angkatan'] ?? '-',
-                $mahasiswa['nim'] ?? 'yang belum tercatat'
-            );
+                $rawMinat = isset($m['minat_bakat']) ? trim((string) $m['minat_bakat']) : '';
+                $adaMinat = $rawMinat !== '' && $rawMinat !== '-' && strtolower($rawMinat) !== 'null';
+                $minatStr = $adaMinat ? " | Minat: {$rawMinat}" : "";
+
+                $baris[] = "{$no}. **{$nama}** — {$prodi} ({$angkatan}) | NIM: **{$nim}**{$minatStr}";
+            }
             $baris[] = '';
+            $baris[] = '_Gunakan nama lengkap atau NIM spesifik jika ingin mencari salah satu secara khusus._';
+
+            return implode("\n", $baris);
         }
 
-        if (count($hasil) > 50) {
-            $baris[] = '';
-            $baris[] = '_Aku menampilkan 50 hasil pertama. Coba persempit pencarian dengan nama, NIM, prodi, atau angkatan._';
+        $baris = ["Aku menemukan **{$jumlah} data** yang cocok, jadi hasilnya masih cukup banyak.", ''];
+        foreach (array_slice($hasil, 0, 5) as $i => $m) {
+            $no = $i + 1;
+            $nama = $m['nama'] ?? 'Nama tidak tersedia';
+            $prodi = $m['prodi'] ?? '-';
+            $angkatan = $m['angkatan'] ?? '-';
+            $nim = $m['nim'] ?? '-';
+
+            $rawMinat = isset($m['minat_bakat']) ? trim((string) $m['minat_bakat']) : '';
+            $adaMinat = $rawMinat !== '' && $rawMinat !== '-' && strtolower($rawMinat) !== 'null';
+            $minatStr = $adaMinat ? " | Minat: {$rawMinat}" : "";
+
+            $baris[] = "{$no}. **{$nama}** — {$prodi} ({$angkatan}) | NIM: **{$nim}**{$minatStr}";
         }
+        $baris[] = '';
+        $baris[] = '_Menampilkan 5 hasil pertama. Coba perjelas dengan nama lengkap, prodi, atau NIM spesifik._';
 
         return implode("\n", $baris);
     }
