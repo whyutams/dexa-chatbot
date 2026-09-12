@@ -78,7 +78,7 @@ INSTRUKSI;
         }
 
         if ($this->menyapaDexa($pertanyaan)) {
-            return $this->responTanya($pertanyaan, 'Halo! Aku Dexa. Cari mahasiswa UNG angkatan 2021 sampai 2023 berdasarkan nama, NIM, prodi, atau angkatan. Coba ketik nama atau NIM yang ingin dicari.', 200, $ip);
+            return $this->responTanya($pertanyaan, 'Halo! Aku Dexa. Cari mahasiswa UNG angkatan 2021 sampai 2023. Coba ketik nama atau NIM yang ingin dicari.', 200, $ip);
         }
 
         if ($this->menanyakanKabarDexa($pertanyaan)) {
