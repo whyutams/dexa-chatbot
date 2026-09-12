@@ -5,7 +5,6 @@ use App\Http\Middleware\EnsureAllowedAccessUrl;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [MainController::class, 'halaman'])
-    ->middleware(EnsureAllowedAccessUrl::class)
     ->name('halaman.tanya');
 Route::post('/tanya', [MainController::class, 'tanya'])
     ->middleware(EnsureAllowedAccessUrl::class)

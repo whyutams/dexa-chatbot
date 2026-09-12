@@ -49,6 +49,7 @@ INSTRUKSI;
     {
         $pertanyaan = $this->bersihkanPertanyaan((string) $request->input('pertanyaan', ''));
         $riwayat = $this->bersihkanRiwayat($request->input('riwayat', []));
+        $ip = $request->ip();
 
         if ($pertanyaan === '') {
             return response()->json([
@@ -57,62 +58,44 @@ INSTRUKSI;
         }
 
         if ($this->menanyakanPembuat($pertanyaan)) {
-            return response()->json([
-                'pesan' => 'Dengan bangga, aku Dexa, Asisten pembantu yang memberikan informasi seputar data mahasiswa UNG yang dibuat oleh Wahyu Tams, mahasiswa Pendidikan Teknologi Informasi. Kenali pembuatku di https://whyutams.dev',
-            ]);
+            return $this->responTanya($pertanyaan, 'Dengan bangga, aku Dexa, Asisten pembantu yang memberikan informasi seputar data mahasiswa UNG yang dibuat oleh Wahyu Tams, mahasiswa Pendidikan Teknologi Informasi. Kenali pembuatku di https://whyutams.dev', 200, $ip);
         }
 
         if ($this->menanyakanIdentitas($pertanyaan)) {
-            return response()->json([
-                'pesan' => 'Aku Dexa, Dibuat untuk menghadirkan kembali salah satu fitur dari [**Dexafy**](https://dexafyx.web.app) yaitu Pencarian mahasiswa (Mahasiswa UNG Finder). Aku fokus pada mahasiswa angkatan 2021 sampai 2023 dan dapat mencari berdasarkan nama, atau NIM saja.',
-            ]);
+            return $this->responTanya($pertanyaan, 'Aku Dexa, Dibuat untuk menghadirkan kembali salah satu fitur dari [**Dexafy**](https://dexafyx.web.app) yaitu Pencarian mahasiswa (Mahasiswa UNG Finder). Aku fokus pada mahasiswa angkatan 2021 sampai 2023 dan dapat mencari berdasarkan nama, atau NIM saja.', 200, $ip);
         }
 
         if (preg_match('/\bdexa\s+itu\s+apa\b|\bapa\s+itu\s+dexa\b/i', $pertanyaan) === 1) {
-            return response()->json([
-                'pesan' => 'Aku Dexa, Dibuat untuk menghadirkan kembali salah satu fitur dari [**Dexafy**](https://dexafyx.web.app) yaitu Pencarian mahasiswa (Mahasiswa UNG Finder). Aku fokus pada mahasiswa angkatan 2021 sampai 2023 dan dapat mencari berdasarkan nama, atau NIM saja.',
-            ]);
+            return $this->responTanya($pertanyaan, 'Aku Dexa, Dibuat untuk menghadirkan kembali salah satu fitur dari [**Dexafy**](https://dexafyx.web.app) yaitu Pencarian mahasiswa (Mahasiswa UNG Finder). Aku fokus pada mahasiswa angkatan 2021 sampai 2023 dan dapat mencari berdasarkan nama, atau NIM saja.', 200, $ip);
         }
 
         if (preg_match('/\bapa\s+itu\s+dexafy\b/i', $pertanyaan) === 1) {
-            return response()->json([
-                'pesan' => '[**Dexafy**](https://dexafyx.web.app) adalah website yang menyediakan berbagai tools pencarian data, termasuk pencarian dosen, mahasiswa, dan kebutuhan informasi lainnya. Website ini dibuat oleh pembuatku yaitu [**Wahyu Tams**](https://whyutams.dev) pada 2023–2024. Saat itu, fitur paling populernya adalah **Mahasiswa UNG Finder**, yang telah menerima lebih dari 8.000 request. Karena Dexafy sudah tidak berlanjut, fitur populer tersebut kini dihadirkan kembali melalui aku, Dexa, sebagai fitur utama untuk mencari mahasiswa UNG.',
-            ]);
+            return $this->responTanya($pertanyaan, '[**Dexafy**](https://dexafyx.web.app) adalah website yang menyediakan berbagai tools pencarian data, termasuk pencarian dosen, mahasiswa, dan kebutuhan informasi lainnya. Website ini dibuat oleh pembuatku yaitu [**Wahyu Tams**](https://whyutams.dev) pada 2023–2024. Saat itu, fitur paling populernya adalah **Mahasiswa UNG Finder**, yang telah menerima lebih dari 8.000 request. Karena Dexafy sudah tidak berlanjut, fitur populer tersebut kini dihadirkan kembali melalui aku, Dexa, sebagai fitur utama untuk mencari mahasiswa UNG.', 200, $ip);
         }
 
         if (preg_match('/\b(bagaimana|gimana|cara)\b.*\b(cari|mencari|pencarian)\b/i', $pertanyaan) === 1) {
-            return response()->json([
-                'pesan' => 'Caranya sederhana: ketik nama mahasiswa, atau NIM yang ingin dicari. Aku akan menampilkan data yang tersedia.',
-            ]);
+            return $this->responTanya($pertanyaan, 'Caranya sederhana: ketik nama mahasiswa, atau NIM yang ingin dicari. Aku akan menampilkan data yang tersedia.', 200, $ip);
         }
 
         if ($this->menyapaDexa($pertanyaan)) {
-            return response()->json([
-                'pesan' => 'Halo! Aku Dexa. Cari mahasiswa UNG angkatan 2021 sampai 2023 berdasarkan nama, NIM, prodi, atau angkatan. Coba ketik nama atau NIM yang ingin dicari.',
-            ]);
+            return $this->responTanya($pertanyaan, 'Halo! Aku Dexa. Cari mahasiswa UNG angkatan 2021 sampai 2023 berdasarkan nama, NIM, prodi, atau angkatan. Coba ketik nama atau NIM yang ingin dicari.', 200, $ip);
         }
 
         if ($this->menanyakanKabarDexa($pertanyaan)) {
-            return response()->json([
-                'pesan' => 'Aku baik dan siap membantu. Kamu bisa memberiku nama mahasiswa atau NIM spesifik untuk dicari.',
-            ]);
+            return $this->responTanya($pertanyaan, 'Aku baik dan siap membantu. Kamu bisa memberiku nama mahasiswa atau NIM spesifik untuk dicari.', 200, $ip);
         }
 
         $jawabanBasaBasi = $this->jawabanBasaBasi($pertanyaan);
         if ($jawabanBasaBasi !== null) {
-            return response()->json(['pesan' => $jawabanBasaBasi]);
+            return $this->responTanya($pertanyaan, $jawabanBasaBasi, 200, $ip);
         }
 
         if ($this->mengobrol($pertanyaan)) {
-            return response()->json([
-                'pesan' => 'Aku siap menemanimu dan membantu mencari data mahasiswa UNG. Kalau ingin mencari, kirim nama lengkap atau NIM yang spesifik.',
-            ]);
+            return $this->responTanya($pertanyaan, 'Aku siap menemanimu dan membantu mencari data mahasiswa UNG. Kalau ingin mencari, kirim nama lengkap atau NIM yang spesifik.', 200, $ip);
         }
 
         if ($this->merupakanKalimatUmum($pertanyaan)) {
-            return response()->json([
-                'pesan' => 'Aku memahami itu sebagai obrolan, bukan pencarian mahasiswa. Kalau ingin mencari data, kirim nama orang atau NIM secara spesifik.',
-            ]);
+            return $this->responTanya($pertanyaan, 'Aku memahami itu sebagai obrolan, bukan pencarian mahasiswa. Kalau ingin mencari data, kirim nama orang atau NIM secara spesifik.', 200, $ip);
         }
 
         $pertanyaan = $this->lengkapiDenganKonteks($pertanyaan, $riwayat);
@@ -120,34 +103,24 @@ INSTRUKSI;
         $data = $this->ambilDataMahasiswa();
 
         if ($data === null) {
-            return response()->json([
-                'pesan' => 'Data mahasiswa tidak ditemukan atau belum tersedia.',
-            ], 500);
+            return $this->responTanya($pertanyaan, 'Data mahasiswa tidak ditemukan atau belum tersedia.', 500, $ip);
         }
 
         if (! $this->memilikiPencarianSpesifik($pertanyaan)) {
-            return response()->json([
-                'pesan' => 'Agar pencarian tetap aman dan relevan, tuliskan nama mahasiswa atau NIM spesifik. Angkatan dan prodi boleh ditambahkan sebagai penyaring, contohnya "Asep tanjung angkatan 2023".',
-            ]);
+            return $this->responTanya($pertanyaan, 'Agar pencarian tetap aman dan relevan, tuliskan nama mahasiswa atau NIM spesifik. Angkatan dan prodi boleh ditambahkan sebagai penyaring, contohnya "Asep tanjung angkatan 2023".', 200, $ip);
         }
 
         $hasil = $this->cariMahasiswa($data['mahasiswa']['angkatan'], $pertanyaan);
 
         if ($hasil === []) {
-            return response()->json([
-                'pesan' => 'Aku tidak menemukan data yang cocok untuk nama tersebut. Kalau yang kamu cari adalah mahasiswa UNG, coba gunakan nama lengkap atau NIM spesifik agar pencariannya lebih akurat.',
-            ]);
+            return $this->responTanya($pertanyaan, 'Aku tidak menemukan data yang cocok untuk nama tersebut. Kalau yang kamu cari adalah mahasiswa UNG, coba gunakan nama lengkap atau NIM spesifik agar pencariannya lebih akurat.', 200, $ip);
         }
 
         if (count($hasil) > 1) {
-            return response()->json([
-                'pesan' => 'Aku menemukan lebih dari satu data yang cocok, jadi belum bisa menampilkan hasilnya. Tambahkan nama depan dan nama belakang, atau gunakan NIM agar pencarian menjadi spesifik.',
-            ]);
+            return $this->responTanya($pertanyaan, 'Aku menemukan lebih dari satu data yang cocok, jadi belum bisa menampilkan hasilnya. Tambahkan nama depan dan nama belakang, atau gunakan NIM agar pencarian menjadi spesifik.', 200, $ip);
         }
 
-        return response()->json([
-            'pesan' => $this->formatHasilPencarian($hasil),
-        ]);
+        return $this->responTanya($pertanyaan, $this->formatHasilPencarian($hasil), 200, $ip);
     }
 
     public function catatChat(): JsonResponse
@@ -467,5 +440,23 @@ INSTRUKSI;
         $pertanyaan = trim($pertanyaan);
 
         return preg_match('/^(?:kamu|anda|dexa)\s+(?:itu\s+)?(?:apa|siapa|bot apa|bisa apa|ngapain|tentang apa)[?!.,\s]*$|^(?:apa|siapa)\s+(?:itu\s+)?(?:kamu|anda|dexa)[?!.,\s]*$|^(?:kamu|anda|dexa)\s+(?:ini\s+)?(?:bot|chatbot)\s+apa[?!.,\s]*$/i', $pertanyaan) === 1;
+    }
+
+    private function responTanya(string $pertanyaan, string $pesan, int $status = 200, ?string $ip = null): JsonResponse
+    {
+        if ($pertanyaan !== '') {
+            try {
+                DB::table('dexa_chats')->insert([
+                    'ip_address' => $ip,
+                    'pertanyaan' => $pertanyaan,
+                    'jawaban' => $pesan,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            } catch (\Throwable) {
+            }
+        }
+
+        return response()->json(['pesan' => $pesan], $status);
     }
 }
