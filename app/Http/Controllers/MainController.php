@@ -192,9 +192,14 @@ INSTRUKSI;
 
     public function catatView(Request $request): JsonResponse
     {
-        $ip = filter_var($request->input('ip'), FILTER_VALIDATE_IP);
+        $rawIp = $request->input('ip');
+        $ip = filter_var($rawIp, FILTER_VALIDATE_IP);
 
-        if ($ip === false) {
+        if ($ip === false || $ip === null) {
+            $ip = $request->ip();
+        }
+
+        if (empty($ip) || filter_var($ip, FILTER_VALIDATE_IP) === false) {
             return response()->json(['pesan' => 'IP tidak valid.'], 422);
         }
 
