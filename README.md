@@ -1,66 +1,195 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Dexa Chatbot 🤖🎓
+
+![Version](https://img.shields.io/badge/version-1.3--beta-blue.svg)
+![PHP Version](https://img.shields.io/badge/PHP-%3E%3D%208.2-777BB4.svg?logo=php)
+![Laravel Version](https://img.shields.io/badge/Laravel-12.x-FF2D20.svg?logo=laravel)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
+
+**Dexa Chatbot** (Si Dexa) adalah aplikasi asisten cerdas berbasis web yang dirancang untuk mempermudah pencarian data mahasiswa Universitas Negeri Gorontalo (UNG), khususnya angkatan 2021 hingga 2023. 
+
+Aplikasi ini menghadirkan kembali fitur populer **Mahasiswa UNG Finder** dari platform legendaris *Dexafy* (2023–2024) yang dikembangkan oleh [Wahyu Tams](https://whyutams.dev) (Wahyu Tamuu).
+
+---
+
+## 💡 Deskripsi Singkat
+
+Mencari data mahasiswa di lingkungan kampus secara cepat sering kali memerlukan query spesifik atau akses portal yang kompleks. **Dexa Chatbot** menyelesaikan masalah ini dengan menyediakan antarmuka percakapan (conversational UI) yang ramah, responsif, dan presisi.
+
+### ✨ Fitur Utama
+- **Mesin Pencari Mahasiswa Hibrida (Weighted Scoring)**: Algoritma pencarian multi-faktor yang mengkombinasikan pencarian *exact match*, pencarian berbasis token kata nama, serta kecerdasan batas Levenshtein (*fuzzy/typo tolerance*).
+- **Ekspansi Alias Prodi & Fakultas**: Mendukung lebih dari 61 alias program studi (contoh: `trpl`, `pti`, `si`, `sasing`, `bk`, `kesmas`) dan 12 fakultas UNG (contoh: `ft`, `fip`, `fmipa`, `fsb`, `fok`, `fe`, `fh`).
+- **Parsing Struktur NIM UNG Universal**: Mengenali dan mengurai NIM 10-digit UNG secara otomatis (format prefix prodi, 2-digit angkatan, dan 3-digit nomor urut mahasiswa).
+- **Integrasi Groq AI (`llama-3.3-70b-versatile`)**: Penanganan basa-basi, salam, dan obrolan umum dengan persona Si Dexa yang ramah, ceria, dan bersahabat.
+- **Persona & Output Standar**: Format jawaban berbasis *bullet point*, bebas klausa meta kosong, dan dilengkapi kalimat kesimpulan profil.
+- **Keamanan & Rate Limiting**: Proteksi endpoint dengan kustom middleware `EnsureAllowedAccessUrl` dan pembatasan request `10 req/min`.
+
+---
+
+## 🛠️ Tech Stack
+
+### Backend & Core
+- **Language**: PHP 8.2+
+- **Framework**: Laravel 12.x
+- **Database**: SQLite (Tabel `dexa_chats`, `dexa_viewers`, `dexa_counters`)
+- **LLM Integration**: Groq API (`llama-3.3-70b-versatile`)
+
+### Frontend & Styling
+- **Templating**: Blade Engine
+- **Styling**: Vanilla CSS & Tailwind CSS v4
+- **Asset Pipeline**: Vite 6 (`laravel-vite-plugin`, `@tailwindcss/vite`)
+
+### Testing & Tooling
+- **Testing**: PHPUnit 11
+- **Process Manager**: Concurrently (`npm run dev` / `composer run dev`)
+
+---
+
+## 📂 Arsitektur & Struktur Direktori
+
+Berikut adalah direktori dan file inti yang membangun arsitektur aplikasi **Dexa Chatbot**:
+
+```text
+dexa-chatbot/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   └── MainController.php          # Controller utama pencarian, chat, & statistik
+│   │   └── Middleware/
+│   │       └── EnsureAllowedAccessUrl.php   # Security middleware validasi origin/referer
+│   ├── Providers/
+│   │   └── AppServiceProvider.php          # Konfigurasi Rate Limiter (tanya-dexa)
+│   └── Services/
+│       ├── ChatContextService.php           # Sanitasi riwayat & resolusi anaphora kata ganti
+│       ├── ResponseFormatterService.php     # Format keluaran profil & persona Si Dexa
+│       └── StudentSearchEngine.php         # Engine pencarian weighted scoring & NIM parser
+├── config/
+│   └── services.php                         # Konfigurasi Groq API Key, REST API, & URL Access
+├── database/
+│   └── database.sqlite                      # Storage SQLite database
+├── resources/
+│   ├── css/                                # Tailwind CSS & styling kustom
+│   ├── js/                                 # Logika interaktif antarmuka chat
+│   └── views/
+│       └── landing.blade.php               # Halaman utama & modal antarmuka Dexa Chatbot
+├── routes/
+│   └── web.php                              # Definisi rute web & endpoint pencarian
+├── storage/
+│   └── app/
+│       ├── data/
+│       │   └── main.json                   # Dataset offline data mahasiswa UNG 2021-2023
+│       └── images/
+│           └── example.png                 # Asset gambar contoh penggunaan modal
+├── tests/                                   # Suite pengujian unit & integrasi PHPUnit
+├── .env.example                             # Template konfigurasi variabel lingkungan
+├── composer.json                            # Dependensi PHP & skrip automasi Laravel
+├── package.json                             # Dependensi Node.js & Vite build tool
+└── vite.config.js                           # Konfigurasi bundler Vite
+```
+
+---
+
+## 🚀 Cara Memulai (Getting Started)
+
+### Prasyarat (Prerequisites)
+Pastikan perangkat Anda telah terinstal dependensi berikut:
+- **PHP** `>= 8.2` (dengan ekstensi `pdo_sqlite`, `mbstring`, `curl`, `json`)
+- **Composer** `>= 2.x`
+- **Node.js** `>= 18.x` & **NPM**
+- **SQLite3**
+
+### 1. Clone Repositori
+```bash
+git clone https://github.com/whyutams/dexa-chatbot.git
+cd dexa-chatbot
+```
+
+### 2. Instal Dependensi
+Instal dependensi backend (PHP) dan frontend (Node.js):
+```bash
+composer install
+npm install
+```
+
+### 3. Konfigurasi Environment Variables
+Salin file `.env.example` menjadi `.env` dan generate application key:
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+Buka file `.env` dan sesuaikan variabel berikut:
+```env
+APP_NAME="Dexa Chatbot"
+APP_ENV=local
+APP_URL=http://localhost:8000
+
+# Integrasi Groq AI
+GROQ_API_KEY=sk_groq_your_api_key_here
+GROQ_MODEL=llama-3.3-70b-versatile
+
+# Sinkronisasi REST API (Opsional)
+REST_API=
+
+# Keamanan URL Access (Opsional)
+URL_ACCESS=
+```
+
+### 4. Persiapan Database
+Buat file database SQLite dan jalankan migrasi tabel:
+```bash
+touch database/database.sqlite
+php artisan migrate
+```
+
+### 5. Menjalankan Aplikasi Secara Lokal
+Jalankan server pengembangan (Laravel Serve + Vite) secara bersamaan menggunakan skrip Composer:
+```bash
+composer run dev
+```
+Atau secara manual di dua terminal terpisah:
+```bash
+# Terminal 1: Laravel Backend
+php artisan serve
+
+# Terminal 2: Vite Assets
+npm run dev
+```
+
+Aplikasi dapat diakses melalui browser di `http://localhost:8000`.
+
+---
+
+## 📖 Cara Penggunaan (Usage)
+
+### Melalui Antarmuka Web (UI)
+1. Buka `http://localhost:8000` pada peramban web Anda.
+2. Masukkan kata kunci pencarian pada kolom input chat, contohnya:
+   - Nama Mahasiswa: `"Asep Tanjung"`
+   - Nama + Prodi/Fakultas: `"Asep dari bahasa inggris"`
+   - NIM Spesifik: `"532423001"` atau `"1521425001"`
+3. Klik tombol kirim untuk menerima balasan profil mahasiswa yang presisi dari Si Dexa.
+
+## 🧪 Pengujian (Testing)
+
+Proyek ini dilengkapi dengan suite pengujian otomatis menggunakan **PHPUnit** untuk memastikan keandalan fungsi backend dan pencarian data.
+
+Untuk menjalankan seluruh pengujian:
+```bash
+php artisan test
+```
+Atau menggunakan biner PHPUnit langsung:
+```bash
+vendor/bin/phpunit
+```
+---
+
+## 📄 Lisensi (License)
+
+Proyek ini dilisensikan di bawah naungan **[MIT License](LICENSE)**.
+
+---
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  Dikembangkan dengan 💖 oleh <a href="https://whyutams.dev">Wahyu Tams</a>
 </p>
-
-## About Laravel
-
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
-
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
-
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
